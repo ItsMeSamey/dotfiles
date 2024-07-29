@@ -1,0 +1,16 @@
+from os import popen
+import sys
+
+brightness = int(popen("cat /sys/class/backlight/intel_backlight/brightness").read().strip())
+old = brightness
+unit = int(2**(1 + (100000*brightness)**(1/9.6) ))
+
+if (sys.argv[1] == "up"):
+    brightness = brightness + unit
+elif (sys.argv[1] == "down"):
+    brightness = max(brightness - unit, 0)
+
+brightness = min(96000,brightness)
+popen(f"echo {int(brightness/960)} > /tmp/wobpipe")
+popen(f"echo {brightness} > /sys/class/backlight/intel_backlight/brightness")
+

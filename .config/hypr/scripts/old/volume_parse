@@ -1,0 +1,29 @@
+#!/bin/python3
+from os import popen
+import sys
+vol = popen("wpctl get-volume @DEFAULT_SINK@").read().split(": ")[-1]
+k = 0
+
+if vol.find("[MUTED]") != -1:
+  k = 100
+
+vol = int(float(vol.strip()[0:4])*100)
+print(vol)
+
+if sys.argv[1] == "up":
+  if vol+2 <= 200:
+    popen(f"wpctl set-volume @DEFAULT_SINK@ 2%+")
+    vol = vol + 2
+elif sys.argv[1] == "down":
+  if vol-2 >= 0:
+    popen(f"wpctl set-volume @DEFAULT_SINK@ 2%-")
+    vol = vol - 2
+elif sys.argv[1] == "toggle":
+  popen("wpctl set-mute @DEFAULT_SINK@ toggle")
+  k = 100-k
+
+vol = int(vol/2) + k
+if k == 100 and vol == 100:
+  vol = 0
+
+popen(f"echo {vol} > /tmp/wobpipe")

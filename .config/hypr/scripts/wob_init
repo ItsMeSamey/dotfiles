@@ -1,0 +1,4 @@
+#!/bin/sh
+rm /tmp/wobpipe
+mkfifo /tmp/wobpipe
+tail -n 1 -f /tmp/wobpipe | wob

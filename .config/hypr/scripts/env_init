@@ -1,0 +1,6 @@
+#!/bin/sh
+#(source /home/a/.launch/env/1/bin/activate&&cd /home/a/.launch/.warp/1/&&/home/a/.local/bin/wplus)&\
+(/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1)&\
+(gnome-keyring-daemon --start --components=secrets)&\
+(sleep 2 && xhost + local:)&\
+echo "message"
