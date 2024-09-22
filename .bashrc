@@ -24,6 +24,7 @@ export GOPATH="$HOME/.go/"
 export LESS='-R --use-color -Dd+r$Du+b$'
 export MANROFFOPT="-P -c"
 export MANPAGER="less"
+export EDITOR=nvim
 
 shopt -s histappend
 
@@ -39,7 +40,7 @@ alias p="python3"
 alias eb='nohup "$@" 2>&1 > /dev/null &'
 alias pyenv="source $HOME/.launch/env/1/bin/activate"
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
-alias dl="aria2c -s32 -j64 -x16 -k8M -m0 -t20 --continue=true --check-certificate=false --allow-piece-length-change=true --optimize-concurrent-downloads=false --stream-piece-selector=gemo"
+alias dl="aria2c -s32 -j64 -x16 -k8M -m0 -t20 --continue=true --check-certificate=false --allow-piece-length-change=true --optimize-concurrent-downloads=true --stream-piece-selector=geom --enable-http-pipelining"
 
 alias wstart="echo toor | sudo -S systemctl start warp-svc && sleep 1 && warp-cli connect"
 alias wstop="warp-cli disconnect && echo toor|sudo -S systemctl stop warp-svc"

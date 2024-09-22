@@ -5,8 +5,8 @@ require('twilight').setup({
     term_bg = "#000000",
     inactive = false,
   },
-  context = 10,
-  treesitter = true,
+  context = 1,
+  treesitter = false,
   expand = {
     -- "function",
     -- "method",
