@@ -47,7 +47,7 @@ alias wstop="warp-cli disconnect && echo toor|sudo -S systemctl stop warp-svc"
 alias wd="warp-cli disconnect"
 alias wu="warp-cli connect"
 alias ws="warp-cli status"
-alias zigdev="$HOME/.launch/bin/zig"
+alias zigold="$HOME/.launch/bin/zig"
 
 #alias pkg-info="sudo pacman -Qi"
 #alias local-install="sudo pacman -U"

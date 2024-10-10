@@ -211,3 +211,14 @@ require("clangd_extensions").setup({
     border = "none",
   },
 })
+
+require'lspconfig'.rust_analyzer.setup{
+  settings = {
+    ['rust-analyzer'] = {
+      diagnostics = {
+        enable = true;
+      }
+    }
+  }
+}
+
