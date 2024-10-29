@@ -16,7 +16,7 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=100000
 HISTSIZE=100000
 
-export PATH="/opt/android-sdk/platform-tools/:/opt/flutter/bin:$HOME/.local/bin:$HOME/.pub-cache/bin:$PATH"
+export PATH="/opt/android-sdk/platform-tools/:/opt/flutter/bin:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
 export XDG_CONFIG_HOME=$HOME/.config/
 export CHROME_EXECUTABLE=brave
 export GOPATH="$HOME/.go/"
@@ -37,7 +37,7 @@ alias diff='diff --color=auto'
 alias ip='ip --color=auto'
 
 alias p="python3"
-alias eb='nohup "$@" 2>&1 > /dev/null &'
+alias eb="(nohup '$@' 2>&1 > /dev/null)"
 alias pyenv="source $HOME/.launch/env/1/bin/activate"
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
 alias dl="aria2c -s32 -j64 -x16 -k8M -m0 -t20 --continue=true --check-certificate=false --allow-piece-length-change=true --optimize-concurrent-downloads=true --stream-piece-selector=geom --enable-http-pipelining"
@@ -48,6 +48,9 @@ alias wd="warp-cli disconnect"
 alias wu="warp-cli connect"
 alias ws="warp-cli status"
 alias zigold="$HOME/.launch/bin/zig"
+
+# Android Studio
+alias android-studio='QT_QPA_PLATFORM=xcb /bin/android-studio'
 
 #alias pkg-info="sudo pacman -Qi"
 #alias local-install="sudo pacman -U"
