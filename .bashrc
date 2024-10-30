@@ -37,7 +37,7 @@ alias diff='diff --color=auto'
 alias ip='ip --color=auto'
 
 alias p="python3"
-alias eb="(nohup '$@' 2>&1 > /dev/null)"
+alias eb="nohup $@ 2>&1 > /dev/null"
 alias pyenv="source $HOME/.launch/env/1/bin/activate"
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
 alias dl="aria2c -s32 -j64 -x16 -k8M -m0 -t20 --continue=true --check-certificate=false --allow-piece-length-change=true --optimize-concurrent-downloads=true --stream-piece-selector=geom --enable-http-pipelining"
