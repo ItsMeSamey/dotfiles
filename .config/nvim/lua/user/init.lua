@@ -149,6 +149,24 @@ require('lazy').setup({
       'p00f/clangd_extensions.nvim'
     },
   },
+  {
+    "supermaven-inc/supermaven-nvim",
+    config = function()
+      require("supermaven-nvim").setup({
+        keymaps = {
+          accept_suggestion = "<M-]>",
+          clear_suggestion = "<M-[>",
+          accept_word = "<M-j>",
+        },
+        log_level = "off", --can be "info"
+        disable_inline_completion = false,
+        disable_keymaps = false,
+        -- condition = function()
+        --   return false -- returns is-disabled
+        -- end
+      })
+    end,
+  },
 
   -- {
   --   "zbirenbaum/copilot.lua",
