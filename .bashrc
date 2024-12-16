@@ -52,6 +52,10 @@ alias zigold="$HOME/.launch/bin/zig"
 # Android Studio
 alias android-studio='QT_QPA_PLATFORM=xcb /bin/android-studio'
 
+alias brave='(echo toor | sudo -S networkctl down wlp4s0) && brave'
+alias nd='echo toor | sudo -S networkctl down wlp4s0'
+alias nu='echo toor | sudo -S networkctl up wlp4s0'
+
 #alias pkg-info="sudo pacman -Qi"
 #alias local-install="sudo pacman -U"
 #alias clr-cache="sudo pacman -Scc"
