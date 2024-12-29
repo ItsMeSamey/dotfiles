@@ -1,0 +1,38 @@
+### Configuration
+window-decoration = false
+window-padding-x = 0
+window-padding-y = 0
+
+window-vsync = true
+
+# Useful when some script calls exit on the shell
+wait-after-command = true
+
+mouse-scroll-multiplier = .5
+
+# Alt + click to move the cursor to that position
+cursor-click-to-move = true
+
+# This makes it so that resource management can be done on a per-surface granularity.
+# For example, if a shell program is using too much memory, only that shell will be killed
+# by the oom monitor instead of the entire Ghostty process. Similarly, if a shell program
+# is using too much CPU, only that surface will be CPU-throttled.
+linux-cgroup = always
+
+# Ghostty GTK application will run in single-instance mode:
+#   each new ghostty process launched will result in a new window
+#   if there is already a running process
+gtk-single-instance = true
+
+# No annoying tabs to take up screen space
+gtk-tabs-location = hidden
+
+# this is not needed since linux has package management
+auto-update = off
+
+### Keybindings
+keybind = ctrl+,=unbind
+# keybind = ctrl+shift++=increase_font_size
+# keybind = ctrl+shift+-=decrease_font_size
+keybind = ctrl+shift+ =toggle_tab_overview
+

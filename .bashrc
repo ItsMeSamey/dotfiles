@@ -5,11 +5,11 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
   /bin/dash -c "
     echo toor|sudo -S clear
     (sudo networkctl down wlp4s0 &&sudo macchanger wlp4s0 -r &&sudo networkctl up wlp4s0)&\
-    sudo systemctl start warp-svc&\
     (sleep 1 && xhost + local:)&\
     clear
   " 2>&1>/dev/null
 fi
+    # sudo systemctl start warp-svc&\
 
 PS1='\[\e[1;32m\]\w\[\e[0m\] \[\e[1;34m\]❯❯\[\e[0m\] ' #\033[s\r\033[$(($COLUMNS-8))C$(date +%-H:%0M:%0S)\033[u'
 HISTCONTROL=ignoreboth
