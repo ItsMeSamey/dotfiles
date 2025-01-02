@@ -5,6 +5,13 @@ window-padding-y = 0
 
 window-vsync = true
 
+# Colors
+background = #101018
+foreground = #ffffff
+selection-background = #404049
+selection-foreground = #ffffff
+selection-invert-fg-bg = false
+
 # Useful when some script calls exit on the shell
 wait-after-command = true
 
