@@ -222,3 +222,8 @@ require'lspconfig'.rust_analyzer.setup{
   }
 }
 
+require'lspconfig'.r_language_server.setup{
+  cmd = { "/usr/bin/R", "--slave", "-e", "languageserver::run()" },
+  filetypes = { "r", "R" },  -- Make sure it triggers for R files
+}
+
