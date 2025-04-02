@@ -1,7 +1,7 @@
-[[ $- != *i* ]] && return
+# [[ $- != *i* ]] && return
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
-  Hyprland>/dev/null&\
+  Hyprland > /dev/null &\
   /bin/dash -c "
     echo toor|sudo -S clear
     (sudo networkctl down wlp4s0 &&sudo macchanger wlp4s0 -r &&sudo networkctl up wlp4s0)&\
@@ -26,6 +26,9 @@ export MANROFFOPT="-P -c"
 export MANPAGER="less"
 export EDITOR=nvim
 
+# fix for broken applications
+export QT_QPA_PLATFORM=xcb
+
 shopt -s histappend
 
 alias mstart="mongod --dbpath /home/a/godot/db/"
@@ -48,9 +51,6 @@ alias wd="warp-cli disconnect"
 alias wu="warp-cli connect"
 alias ws="warp-cli status"
 alias zigold="$HOME/.launch/bin/zig"
-
-# Android Studio
-alias android-studio='QT_QPA_PLATFORM=xcb /bin/android-studio'
 
 alias brave='(echo toor | sudo -S networkctl down wlp4s0) && brave'
 alias nd='echo toor | sudo -S networkctl down wlp4s0'
