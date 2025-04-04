@@ -9,4 +9,5 @@ sudo bash -e "echo '
 [chaotic-aur]
 Include = /etc/pacman.d/chaotic-mirrorlist
 ' >> /etc/pacman.conf"
-sduo pacman -Syu
+sudo pacman -Syu
+
