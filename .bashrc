@@ -6,6 +6,7 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
     echo toor|sudo -S clear
     (sudo networkctl down wlp4s0 &&sudo macchanger wlp4s0 -r &&sudo networkctl up wlp4s0)&\
     (sleep 1 && xhost + local:)&\
+    (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
     clear
   " 2>&1>/dev/null
 fi
