@@ -43,3 +43,6 @@ keybind = ctrl+,=unbind
 # keybind = ctrl+shift+-=decrease_font_size
 keybind = ctrl+shift+ =toggle_tab_overview
 
+# 0.5 GB
+# scrollback-limit = 536870912
+
