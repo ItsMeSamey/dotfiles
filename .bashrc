@@ -51,7 +51,7 @@ alias wstop="warp-cli disconnect && echo toor|sudo -S systemctl stop warp-svc"
 alias wd="warp-cli disconnect"
 alias wu="warp-cli connect"
 alias ws="warp-cli status"
-alias zigold="$HOME/.launch/bin/zig"
+alias zignew="$HOME/.launch/bin/zig"
 
 alias brave='(echo toor | sudo -S networkctl down wlp4s0) && brave'
 alias nd='echo toor | sudo -S networkctl down wlp4s0'
@@ -62,4 +62,30 @@ alias nu='echo toor | sudo -S networkctl up wlp4s0'
 #alias clr-cache="sudo pacman -Scc"
 #alias unlock="sudo rm /var/lib/pacman/db.lck"
 #sshpass -p root ssh a@192.168.158.77 rpicam-vid --flicker-period=10000us --width=1920 --height=1080 -t0 -o- | tee vid.mp4 | mpv - --speed=2 --fps=25 --fs
+
+dircat() {
+  if [ "$#" -ne 1 ]; then
+    echo "Usage: dircat <directory>"
+    echo "Concatenates all files recursively within the specified directory with headers/footers."
+    return 1
+  fi
+
+  TARGET_DIR="$1"
+
+  if [ ! -d "$TARGET_DIR" ]; then
+    echo "Error: Directory '$TARGET_DIR' not found or is not a directory."
+    return 1
+  fi
+
+  find "$TARGET_DIR" -type f -print0 | while IFS= read -r -d $'\0' file; do
+    echo ">>>>>>>>>>>>>>>>>> ${file}"
+    cat "${file}"
+    echo ""
+    echo "<<<<<<<<<<<<<<<<<< ${file}"
+    echo ""
+  done
+
+  return 0
+}
+
 
