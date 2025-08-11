@@ -6,6 +6,7 @@ if not vim.loop.fs_stat(lazypath) then
     '--filter=blob:none',
     'https://github.com/folke/lazy.nvim.git',
     '--branch=stable',
+    '--depth=1',
     lazypath,
   }
 end
@@ -42,6 +43,9 @@ require('lazy').setup({
   -- Git related plugins
   -- 'tpope/vim-fugitive',
   -- 'tpope/vim-rhubarb',
+
+  -- Java plugin
+  "mfussenegger/nvim-jdtls",
 
   {
     'kevinhwang91/nvim-ufo',
@@ -93,7 +97,10 @@ require('lazy').setup({
     'neovim/nvim-lspconfig',
     dependencies = {
       -- Automatically install LSPs to stdpath for neovim
-      { 'williamboman/mason.nvim', config = true },
+      {
+        'williamboman/mason.nvim',
+        -- config = true
+      },
       'williamboman/mason-lspconfig.nvim',
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
