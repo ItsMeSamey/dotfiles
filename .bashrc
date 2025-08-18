@@ -1,12 +1,14 @@
 # [[ $- != *i* ]] && return
+TERM=xterm-256color
+PASSWD=toor
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
   Hyprland > /dev/null &\
   /bin/dash -c "
-    echo toor|sudo -S clear
-    (sudo networkctl down wlp4s0 &&sudo macchanger wlp4s0 -r &&sudo networkctl up wlp4s0)&\
-    (sleep 1 && xhost + local:)&\
-    (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
+    echo $PASSWD|sudo -S clear
+    (sudo networkctl down wlp4s0 && sudo macchanger wlp4s0 -r && sudo networkctl up wlp4s0 && clear)&\
+    (sleep 1 && xhost + local: && clear)&\
+    (XDG_MENU_PREFIX=arch- kbuildsycoca6 && clear)&\
     clear
   " 2>&1>/dev/null
 fi
@@ -46,16 +48,17 @@ pyenv() { source "$HOME/.launch/env/$1/bin/activate"; }
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
 alias dl="aria2c -s32 -j64 -x16 -k8M -m0 -t20 --continue=true --check-certificate=false --allow-piece-length-change=true --optimize-concurrent-downloads=true --stream-piece-selector=geom --enable-http-pipelining"
 
-alias wstart="echo toor | sudo -S systemctl start warp-svc && sleep 1 && warp-cli connect"
-alias wstop="warp-cli disconnect && echo toor|sudo -S systemctl stop warp-svc"
+alias wstart="echo $PASSWD | sudo -S systemctl start warp-svc && sleep 1 && warp-cli connect"
+alias wstop="warp-cli disconnect && echo $PASSWD|sudo -S systemctl stop warp-svc"
 alias wd="warp-cli disconnect"
 alias wu="warp-cli connect"
 alias ws="warp-cli status"
 alias zignew="$HOME/.launch/bin/zig"
 
-alias brave='(echo toor | sudo -S networkctl down wlp4s0) && brave'
-alias nd='echo toor | sudo -S networkctl down wlp4s0'
-alias nu='echo toor | sudo -S networkctl up wlp4s0'
+alias brave='(echo $PASSWD| sudo -S networkctl down wlp4s0) && brave'
+alias nd='echo $PASSWD| sudo -S networkctl down wlp4s0'
+alias nu='echo $PASSWD| sudo -S networkctl up wlp4s0'
+alias nohist="unset HISTFILE"
 
 #alias pkg-info="sudo pacman -Qi"
 #alias local-install="sudo pacman -U"

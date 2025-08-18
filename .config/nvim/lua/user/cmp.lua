@@ -228,7 +228,7 @@ require'lspconfig'.r_language_server.setup{
 }
 
 local root_dir = require("jdtls.setup").find_root({ "gradlew", "build.gradle", ".git", "mvnw", "pom.xml" })
-local jdtls_path = vim.fn.glob(vim.fn.stdpath('data') .. '/mason/') .. 'packages/jdtls/.'
+local jdtls_path = vim.fn.glob(vim.fn.stdpath('data') .. '/mason/') .. 'packages/jdtls/bin/jdtls'
 
 -- vim.notify("JDTLS root dir resolved to: " .. tostring(root_dir), vim.log.levels.INFO, { title = "JDTLS Debug" })
 
@@ -287,10 +287,10 @@ require('jdtls').start_or_attach({
     },
   },
 
-	handlers = {
-		-- By assigning an empty function, you can remove the notifications
-		-- printed to the cmd
-		["$/progress"] = function(_, result, ctx) end,
-	},
+  handlers = {
+    -- By assigning an empty function, you can remove the notifications
+    -- printed to the cmd
+    ["$/progress"] = function(_, result, ctx) end,
+  },
 })
 
