@@ -60,6 +60,9 @@ alias nd='echo $PASSWD| sudo -S networkctl down wlp4s0'
 alias nu='echo $PASSWD| sudo -S networkctl up wlp4s0'
 alias nohist="unset HISTFILE"
 
+alias mossup="systemctl start --user home-a-uq-csse2310-root.mount"
+alias mossdown="systemctl stop --user home-a-uq-csse2310-root.mount"
+
 #alias pkg-info="sudo pacman -Qi"
 #alias local-install="sudo pacman -U"
 #alias clr-cache="sudo pacman -Scc"
@@ -67,9 +70,18 @@ alias nohist="unset HISTFILE"
 #sshpass -p root ssh a@192.168.158.77 rpicam-vid --flicker-period=10000us --width=1920 --height=1080 -t0 -o- | tee vid.mp4 | mpv - --speed=2 --fps=25 --fs
 
 dircat() {
+  local recursive=false
+  local TARGET_DIR=""
+
+  if [ "$1" = "-r" ]; then
+    recursive=true
+    shift # Consume the -r flag
+  fi
+
   if [ "$#" -ne 1 ]; then
-    echo "Usage: dircat <directory>"
-    echo "Concatenates all files recursively within the specified directory with headers/footers."
+    echo "Usage: dircat [-r] <directory>"
+    echo "Concatenates all text files within the specified directory with headers/footers."
+    echo "  -r : Recurse into subdirectories."
     return 1
   fi
 
@@ -80,15 +92,23 @@ dircat() {
     return 1
   fi
 
-  find "$TARGET_DIR" -type f -print0 | while IFS= read -r -d $'\0' file; do
-    echo ">>>>>>>>>>>>>>>>>> ${file}"
-    cat "${file}"
-    echo ""
-    echo "<<<<<<<<<<<<<<<<<< ${file}"
-    echo ""
+  local find_args=("$TARGET_DIR")
+  if [ "$recursive" = "false" ]; then
+    find_args+=("-maxdepth" "1")
+  fi
+  find_args+=("-type" "f" "-print0")
+
+  find "${find_args[@]}" | while IFS= read -r -d $'\0' file; do
+    # Check if the file is a text file by examining its MIME type
+    if [[ "$(file -b --mime-type "$file")" == text/* ]]; then
+      echo ">>>>>>>>>>>>>>>>>> ${file}"
+      cat "${file}"
+      echo ""
+      echo "<<<<<<<<<<<<<<<<<< ${file}"
+      echo ""
+    fi
   done
 
   return 0
 }
-
 
