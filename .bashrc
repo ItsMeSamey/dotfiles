@@ -29,6 +29,9 @@ export MANROFFOPT="-P -c"
 export MANPAGER="less"
 export EDITOR=nvim
 
+# nvidia as decoder
+export LIBVA_DRIVER_NAME=nvidia
+
 # fix for broken applications
 export QT_QPA_PLATFORM=xcb
 
@@ -101,10 +104,10 @@ dircat() {
   find "${find_args[@]}" | while IFS= read -r -d $'\0' file; do
     # Check if the file is a text file by examining its MIME type
     if [[ "$(file -b --mime-type "$file")" == text/* ]]; then
-      echo ">>>>>>>>>>>>>>>>>> ${file}"
+      echo ">>>> ${file}"
       cat "${file}"
       echo ""
-      echo "<<<<<<<<<<<<<<<<<< ${file}"
+      echo "<<<< ${file}"
       echo ""
     fi
   done
