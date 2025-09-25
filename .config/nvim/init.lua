@@ -3,10 +3,11 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Do not add a newline at the end of the file
-vim.opt.endofline = false
-vim.opt.fixendofline = false
+-- vim.opt.fixeol = false
+-- vim.opt.fixendofline = false
+-- vim.opt.endofline = false
 
--- vim.opt.swapfile = false
+vim.opt.swapfile = false
 -- vim.backup = false
 vim.opt.undodir = os.getenv('HOME') .. '/.cache/nvim/undodir/'
 vim.opt.undofile = true
