@@ -227,70 +227,70 @@ require'lspconfig'.r_language_server.setup{
   filetypes = { "r", "R" },  -- Make sure it triggers for R files
 }
 
-local root_dir = require("jdtls.setup").find_root({ "gradlew", "build.gradle", ".git", "mvnw", "pom.xml" })
-local jdtls_path = vim.fn.glob(vim.fn.stdpath('data') .. '/mason/') .. 'packages/jdtls/bin/jdtls'
-
--- vim.notify("JDTLS root dir resolved to: " .. tostring(root_dir), vim.log.levels.INFO, { title = "JDTLS Debug" })
-
-require('jdtls').start_or_attach({
-  cmd = {
-    'java',
-    '-Declipse.application=org.eclipse.jdt.ls.core.id1.JavaLanguageServer',
-    '-Dosgi.bundles.defaultStartLevel=4',
-    '-Declipse.product=org.eclipse.jdt.ls.core.product',
-    '-Dlog.protocol=true',
-    '-Dlog.level=ALL',
-    '-Xms1g',
-    '--add-modules=ALL-SYSTEM',
-    '--add-opens', 'java.base/java.util=ALL-UNNAMED',
-    '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-    '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
-    '-configuration', jdtls_path .. '/config_linux',
-    '-data', vim.fn.stdpath('data') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
-  },
-
-  root_dir = root_dir,
-
-  settings = {
-    java = {
-      references = {
-        includeDecompiledSources = true,
-      },
-
-      eclipse = {
-        downloadSources = true,
-      },
-
-      maven = {
-        downloadSources = true,
-      },
-
-      configuration = {
-        runtimes = {
-          {
-            name = "JavaSE-21",
-            path = "/usr/lib/jvm/default-runtime",
-            default = true,
-          }
-        }
-      },
-
-      import = {
-        gradle = {
-          enabled = true,
-        },
-      },
-    },
-
-    flags = {
-      allow_incremental_sync = true,
-    },
-  },
-
-  handlers = {
-    -- By assigning an empty function, you can remove the notifications
-    -- printed to the cmd
-    ["$/progress"] = function(_, result, ctx) end,
-  },
-})
+-- local root_dir = require("jdtls.setup").find_root({ "gradlew", "build.gradle", ".git", "mvnw", "pom.xml" })
+-- local jdtls_path = vim.fn.glob(vim.fn.stdpath('data') .. '/mason/') .. 'packages/jdtls/bin/jdtls'
+--
+-- -- vim.notify("JDTLS root dir resolved to: " .. tostring(root_dir), vim.log.levels.INFO, { title = "JDTLS Debug" })
+--
+-- require('jdtls').start_or_attach({
+--   cmd = {
+--     'java',
+--     '-Declipse.application=org.eclipse.jdt.ls.core.id1.JavaLanguageServer',
+--     '-Dosgi.bundles.defaultStartLevel=4',
+--     '-Declipse.product=org.eclipse.jdt.ls.core.product',
+--     '-Dlog.protocol=true',
+--     '-Dlog.level=ALL',
+--     '-Xms1g',
+--     '--add-modules=ALL-SYSTEM',
+--     '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+--     '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+--     '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
+--     '-configuration', jdtls_path .. '/config_linux',
+--     '-data', vim.fn.stdpath('data') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+--   },
+--
+--   root_dir = root_dir,
+--
+--   settings = {
+--     java = {
+--       references = {
+--         includeDecompiledSources = true,
+--       },
+--
+--       eclipse = {
+--         downloadSources = true,
+--       },
+--
+--       maven = {
+--         downloadSources = true,
+--       },
+--
+--       configuration = {
+--         runtimes = {
+--           {
+--             name = "JavaSE-21",
+--             path = "/usr/lib/jvm/default-runtime",
+--             default = true,
+--           }
+--         }
+--       },
+--
+--       import = {
+--         gradle = {
+--           enabled = true,
+--         },
+--       },
+--     },
+--
+--     flags = {
+--       allow_incremental_sync = true,
+--     },
+--   },
+--
+--   handlers = {
+--     -- By assigning an empty function, you can remove the notifications
+--     -- printed to the cmd
+--     ["$/progress"] = function(_, result, ctx) end,
+--   },
+-- })
 

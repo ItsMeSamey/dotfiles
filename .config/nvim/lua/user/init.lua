@@ -45,7 +45,7 @@ require('lazy').setup({
   -- 'tpope/vim-rhubarb',
 
   -- Java plugin
-  "mfussenegger/nvim-jdtls",
+  -- "mfussenegger/nvim-jdtls",
 
   {
     'kevinhwang91/nvim-ufo',
