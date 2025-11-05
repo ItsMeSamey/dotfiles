@@ -37,16 +37,6 @@ require('lazy').setup({
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
 
-  -- 'gc' to comment visual regions/lines
-  -- { 'numToStr/Comment.nvim', opts = {} },
-
-  -- Git related plugins
-  -- 'tpope/vim-fugitive',
-  -- 'tpope/vim-rhubarb',
-
-  -- Java plugin
-  -- "mfussenegger/nvim-jdtls",
-
   {
     'kevinhwang91/nvim-ufo',
     dependencies = { 'kevinhwang91/promise-async' }
@@ -70,16 +60,6 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
 
-  -- {
-  --   'akinsho/flutter-tools.nvim',
-  --   lazy = false,
-  --   dependencies = {
-  --     'nvim-lua/plenary.nvim',
-  --     'stevearc/dressing.nvim', -- optional for vim.ui.select
-  --   },
-  --   config = true,
-  -- },
-
   { -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     -- See `:help lualine.txt`
@@ -87,8 +67,36 @@ require('lazy').setup({
       options = {
         icons_enabled = true,
         theme = 'auto',
-        component_separators = '|',
-        section_separators = '',
+        component_separators = { left = '', right = ''},
+        section_separators = { left = '', right = ''},
+
+        disabled_filetypes = {
+          statusline = {},
+          winbar = {},
+        },
+
+        ignore_focus = {},
+        always_divide_middle = true,
+        always_show_tabline = true,
+        globalstatus = false,
+        refresh = {
+          statusline = 1000,
+          tabline = 1000,
+          winbar = 1000,
+          refresh_time = 16, -- ~60fps
+          events = {
+            'WinEnter',
+            'BufEnter',
+            'BufWritePost',
+            'SessionLoadPost',
+            'FileChangedShellPost',
+            'VimResized',
+            'Filetype',
+            'CursorMoved',
+            'CursorMovedI',
+            'ModeChanged',
+          },
+        }
       },
     },
   },
@@ -131,7 +139,7 @@ require('lazy').setup({
   },
 
   {
-    "luckasRanarison/tailwind-tools.nvim",
+    "ItsMeSamey/tailwind-tools.nvim",
     name = "tailwind-tools",
     build = ":UpdateRemotePlugins",
     dependencies = {
@@ -168,6 +176,7 @@ require('lazy').setup({
       'p00f/clangd_extensions.nvim'
     },
   },
+
   {
     "supermaven-inc/supermaven-nvim",
     config = function()
@@ -186,63 +195,5 @@ require('lazy').setup({
       })
     end,
   },
-
-  -- {
-  --   "zbirenbaum/copilot.lua",
-  --   config = function ()
-  --     require("copilot").setup({
-  --       panel = {
-  --         enabled = false,
-  --         auto_refresh = true,
-  --         keymap = {
-  --           jump_prev = "[[",
-  --           jump_next = "]]",
-  --           accept = "<CR>",
-  --           refresh = "gr",
-  --           open = "<M-CR>"
-  --         },
-  --         layout = {
-  --           position = "bottom", -- | top | left | right
-  --           ratio = 0.4
-  --         },
-  --       },
-  --       suggestion = {
-  --         enabled = true,
-  --         auto_trigger = true,
-  --         debounce = 75,
-  --         keymap = {
-  --           accept = "<M-l>",
-  --           accept_word = false,
-  --           accept_line = false,
-  --           next = "<M-]>",
-  --           prev = "<M-[>",
-  --           dismiss = "<C-]>",
-  --         },
-  --       },
-  --       filetypes = {
-  --         yaml = false,
-  --         markdown = false,
-  --         help = false,
-  --         gitcommit = false,
-  --         gitrebase = false,
-  --         hgcommit = false,
-  --         svn = false,
-  --         cvs = false,
-  --         ["."] = false,
-  --       },
-  --       copilot_node_command = 'node', -- Node.js version must be > 18.x
-  --       server_opts_overrides = {},
-  --     })
-  --   end
-  -- },
-  -- {
-  --   "zbirenbaum/copilot-cmp",
-  --   config = function ()
-  --     require("copilot_cmp").setup({
-  --       suggestion = { enabled = false },
-  --       panel = { enabled = false },
-  --     })
-  --   end
-  -- },
 }, {})
 

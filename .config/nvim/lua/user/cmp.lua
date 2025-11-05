@@ -115,19 +115,16 @@ cmp.setup {
 }
 
 -- Setup neovim lua configuration
--- require('neodev').setup()
+require('neodev').setup()
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
--- Some LSP-Configs
-local lspconfig = require 'lspconfig'
-
-lspconfig.clangd.setup {
+vim.lsp.config('clangd', {
   on_attach = on_attach,
   capabilities = capabilities,
-}
+})
 
 require("clangd_extensions").setup({
   inlay_hints = {
@@ -163,42 +160,41 @@ require("clangd_extensions").setup({
   },
   ast = {
     -- These are unicode, should be available in any font
+    -- role_icons = {
+    --   type = "🄣",
+    --   declaration = "🄓",
+    --   expression = "🄔",
+    --   statement = ";",
+    --   specifier = "🄢",
+    --   ["template argument"] = "🆃",
+    -- },
+    -- kind_icons = {
+    --   Compound = "🄲",
+    --   Recovery = "🅁",
+    --   TranslationUnit = "🅄",
+    --   PackExpansion = "🄿",
+    --   TemplateTypeParm = "🅃",
+    --   TemplateTemplateParm = "🅃",
+    --   TemplateParamObject = "🅃",
+    -- },
+
     role_icons = {
-      type = "🄣",
-      declaration = "🄓",
-      expression = "🄔",
-      statement = ";",
-      specifier = "🄢",
-      ["template argument"] = "🆃",
+      type = "",
+      declaration = "",
+      expression = "",
+      specifier = "",
+      statement = "",
+      ["template argument"] = "",
     },
     kind_icons = {
-      Compound = "🄲",
-      Recovery = "🅁",
-      TranslationUnit = "🅄",
-      PackExpansion = "🄿",
-      TemplateTypeParm = "🅃",
-      TemplateTemplateParm = "🅃",
-      TemplateParamObject = "🅃",
+      Compound = "",
+      Recovery = "",
+      TranslationUnit = "",
+      PackExpansion = "",
+      TemplateTypeParm = "",
+      TemplateTemplateParm = "",
+      TemplateParamObject = "",
     },
-    --[[ These require codicons (https://github.com/microsoft/vscode-codicons)
-            role_icons = {
-                type = "",
-                declaration = "",
-                expression = "",
-                specifier = "",
-                statement = "",
-                ["template argument"] = "",
-            },
-
-            kind_icons = {
-                Compound = "",
-                Recovery = "",
-                TranslationUnit = "",
-                PackExpansion = "",
-                TemplateTypeParm = "",
-                TemplateTemplateParm = "",
-                TemplateParamObject = "",
-            }, ]]
 
     highlights = {
       detail = "Comment",
@@ -212,7 +208,7 @@ require("clangd_extensions").setup({
   },
 })
 
-require'lspconfig'.rust_analyzer.setup{
+vim.lsp.config('rust_analyzer', {
   settings = {
     ['rust-analyzer'] = {
       diagnostics = {
@@ -220,77 +216,10 @@ require'lspconfig'.rust_analyzer.setup{
       }
     }
   }
-}
+})
 
-require'lspconfig'.r_language_server.setup{
+vim.lsp.config('r_language_server', {
   cmd = { "/usr/bin/R", "--slave", "-e", "languageserver::run()" },
   filetypes = { "r", "R" },  -- Make sure it triggers for R files
-}
-
--- local root_dir = require("jdtls.setup").find_root({ "gradlew", "build.gradle", ".git", "mvnw", "pom.xml" })
--- local jdtls_path = vim.fn.glob(vim.fn.stdpath('data') .. '/mason/') .. 'packages/jdtls/bin/jdtls'
---
--- -- vim.notify("JDTLS root dir resolved to: " .. tostring(root_dir), vim.log.levels.INFO, { title = "JDTLS Debug" })
---
--- require('jdtls').start_or_attach({
---   cmd = {
---     'java',
---     '-Declipse.application=org.eclipse.jdt.ls.core.id1.JavaLanguageServer',
---     '-Dosgi.bundles.defaultStartLevel=4',
---     '-Declipse.product=org.eclipse.jdt.ls.core.product',
---     '-Dlog.protocol=true',
---     '-Dlog.level=ALL',
---     '-Xms1g',
---     '--add-modules=ALL-SYSTEM',
---     '--add-opens', 'java.base/java.util=ALL-UNNAMED',
---     '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
---     '-jar', vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
---     '-configuration', jdtls_path .. '/config_linux',
---     '-data', vim.fn.stdpath('data') .. '/jdtls-workspace/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
---   },
---
---   root_dir = root_dir,
---
---   settings = {
---     java = {
---       references = {
---         includeDecompiledSources = true,
---       },
---
---       eclipse = {
---         downloadSources = true,
---       },
---
---       maven = {
---         downloadSources = true,
---       },
---
---       configuration = {
---         runtimes = {
---           {
---             name = "JavaSE-21",
---             path = "/usr/lib/jvm/default-runtime",
---             default = true,
---           }
---         }
---       },
---
---       import = {
---         gradle = {
---           enabled = true,
---         },
---       },
---     },
---
---     flags = {
---       allow_incremental_sync = true,
---     },
---   },
---
---   handlers = {
---     -- By assigning an empty function, you can remove the notifications
---     -- printed to the cmd
---     ["$/progress"] = function(_, result, ctx) end,
---   },
--- })
+})
 
