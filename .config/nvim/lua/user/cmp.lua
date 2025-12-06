@@ -121,6 +121,7 @@ require('neodev').setup()
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
+vim.lsp.enable('clangd')
 vim.lsp.config('clangd', {
   on_attach = on_attach,
   capabilities = capabilities,
@@ -128,7 +129,7 @@ vim.lsp.config('clangd', {
 
 require("clangd_extensions").setup({
   inlay_hints = {
-    inline = vim.fn.has("nvim-0.10") == 1,
+    inline = true,
     -- Options other than `highlight' and `priority' only work
     -- if `inline' is disabled
     -- Only show inlay hints for the current line
