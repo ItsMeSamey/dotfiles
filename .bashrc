@@ -4,8 +4,8 @@ TERM=xterm-ghostty
 PASSWD=toor
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
-  Hyprland > /dev/null &\
-  /bin/dash -c "
+  start-hyprland > /dev/null &\
+  /bin/bash -c "
     echo $PASSWD|sudo -S clear
     (sudo networkctl down wlp4s0 && sudo macchanger wlp4s0 -r && sudo networkctl up wlp4s0 && clear)&\
     (sleep 1 && xhost + local: && clear)&\
@@ -32,12 +32,19 @@ export MANPAGER="less"
 export EDITOR=nvim
 
 # nvidia as decoder
-export LIBVA_DRIVER_NAME=nvidia
+# export LIBVA_DRIVER_NAME=nvidia
 
 # fix for broken applications
 export QT_QPA_PLATFORM=xcb
 # debug symbols for glibc
 export DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
+
+# use intel as vulkan backend
+export MESA_VK_DEVICE_SELECT=intel
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
+export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
+# wayland video driver
+export SDL_VIDEO_DRIVER=wayland
 
 shopt -s histappend
 
@@ -69,6 +76,7 @@ alias nohist="unset HISTFILE"
 
 alias mossup="systemctl start --user home-a-uq-csse2310-root.mount"
 alias mossdown="systemctl stop --user home-a-uq-csse2310-root.mount"
+alias waybind="sudo mount --bind ~/Downloads/waybind ~/.local/share/waydroid/data/media/0/Download/waybind"
 
 alias futf='grep --color=auto -P -n "[^\x00-\x7F]"'
 alias faws='grep --color=auto -P -n "[^\S ]"'
@@ -79,7 +87,8 @@ alias faws='grep --color=auto -P -n "[^\S ]"'
 #alias unlock="sudo rm /var/lib/pacman/db.lck"
 #sshpass -p root ssh a@192.168.158.77 rpicam-vid --flicker-period=10000us --width=1920 --height=1080 -t0 -o- | tee vid.mp4 | mpv - --speed=2 --fps=25 --fs
 
-
+alias g='(cd ~/projects/python/gemini-client; uv run main.py)'
+alias gserver='(cd ~/projects/python/gemini-client; uv run gemini_proxy.py)'
 
 dircat() {
   local recursive=false
