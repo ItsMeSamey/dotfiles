@@ -73,6 +73,7 @@ alias brave='(echo $PASSWD| sudo -S networkctl down wlp4s0) && brave'
 alias nd='echo $PASSWD| sudo -S networkctl down wlp4s0'
 alias nu='echo $PASSWD| sudo -S networkctl up wlp4s0'
 alias nohist="unset HISTFILE"
+alias nocache="mkdir /dev/shm/cache/; echo $PASSWD|sudo -S mount --bind /dev/shm/cache/ /home/a/.cache/"
 
 alias mossup="systemctl start --user home-a-uq-csse2310-root.mount"
 alias mossdown="systemctl stop --user home-a-uq-csse2310-root.mount"
