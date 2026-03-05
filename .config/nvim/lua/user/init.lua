@@ -37,9 +37,17 @@ require('lazy').setup({
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
 
+  -- lazy.nvim
   {
-    'kevinhwang91/nvim-ufo',
-    dependencies = { 'kevinhwang91/promise-async' }
+    "chrisgrieser/nvim-origami",
+    event = "VeryLazy",
+    opts = {}, -- required even when using default config
+
+    -- recommended: disable vim's auto-folding
+    init = function()
+      vim.opt.foldlevel = 99
+      vim.opt.foldlevelstart = 99
+    end,
   },
 
   { -- Add indentation guides even on blank lines
@@ -177,41 +185,41 @@ require('lazy').setup({
     },
   },
 
-  {
-    "jinzhongjia/zig-lamp",
-    event = "VeryLazy",
-    build = ":ZigLampBuild async",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    -- opts = {
-    --   fall_back_sys_zls = true,
-    --   zls_lsp_opt = {
-    --     autostart = true,
-    --   },
-    -- },
-    init = function()
-      -- Backward-compatible global vars (all optional)
-      -- Auto-install ZLS: timeout in milliseconds; set to nil to disable
-      vim.g.zig_lamp_zls_auto_install = nil
-      -- Fallback to system zls when no local match is found
-      vim.g.zig_lamp_fall_back_sys_zls = "zls"
-      -- Extra LSP options merged into defaults
-      vim.g.zig_lamp_zls_lsp_opt = {
-        autostart = true,
-      }
-      -- ZLS server settings (overrides built-in recommendations)
-      vim.g.zig_lamp_zls_settings = {
-        zls = {
-          filetypes = "zig"
-        }
-      }
-      -- Help text color for the package panel
-      vim.g.zig_lamp_pkg_help_fg = "#CF5C00"
-      -- Timeout (ms) used by `zig fetch` when retrieving url hashes
-      vim.g.zig_lamp_zig_fetch_timeout = 30000
-    end,
-  },
+  -- {
+  --   "jinzhongjia/zig-lamp",
+  --   event = "VeryLazy",
+  --   build = ":ZigLampBuild async",
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",
+  --   },
+  --   -- opts = {
+  --   --   fall_back_sys_zls = true,
+  --   --   zls_lsp_opt = {
+  --   --     autostart = true,
+  --   --   },
+  --   -- },
+  --   init = function()
+  --     -- Backward-compatible global vars (all optional)
+  --     -- Auto-install ZLS: timeout in milliseconds; set to nil to disable
+  --     vim.g.zig_lamp_zls_auto_install = nil
+  --     -- Fallback to system zls when no local match is found
+  --     vim.g.zig_lamp_fall_back_sys_zls = "zls"
+  --     -- Extra LSP options merged into defaults
+  --     vim.g.zig_lamp_zls_lsp_opt = {
+  --       autostart = true,
+  --     }
+  --     -- ZLS server settings (overrides built-in recommendations)
+  --     vim.g.zig_lamp_zls_settings = {
+  --       zls = {
+  --         filetypes = "zig"
+  --       }
+  --     }
+  --     -- Help text color for the package panel
+  --     vim.g.zig_lamp_pkg_help_fg = "#CF5C00"
+  --     -- Timeout (ms) used by `zig fetch` when retrieving url hashes
+  --     vim.g.zig_lamp_zig_fetch_timeout = 30000
+  --   end,
+  -- },
 
   {
     "supermaven-inc/supermaven-nvim",

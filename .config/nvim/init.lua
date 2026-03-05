@@ -100,7 +100,7 @@ require 'user.treesitter'
 require 'user.twilight'
 require 'user.gitsigns'
 require 'user.indent'
-require 'user.ufo'
+require 'user.origami'
 
 -- require 'user.flutter'
 -- require 'user.comment'
