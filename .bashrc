@@ -67,7 +67,7 @@ alias wstop="warp-cli disconnect && echo $PASSWD|sudo -S systemctl stop warp-svc
 alias wd="warp-cli disconnect"
 alias wu="warp-cli connect"
 alias ws="warp-cli status"
-alias zignew="$HOME/.launch/bin/zig"
+alias zigalt="$HOME/.launch/bin/zig"
 
 alias brave='(echo $PASSWD| sudo -S networkctl down wlp4s0) && brave'
 alias nd='echo $PASSWD| sudo -S networkctl down wlp4s0'
@@ -79,8 +79,9 @@ alias mossup="systemctl start --user home-a-uq-csse2310-root.mount"
 alias mossdown="systemctl stop --user home-a-uq-csse2310-root.mount"
 alias waybind="sudo mount --bind ~/Downloads/waybind ~/.local/share/waydroid/data/media/0/Download/waybind"
 
-alias futf='grep --color=auto -P -n "[^\x00-\x7F]"'
-alias faws='grep --color=auto -P -n "[^\S ]"'
+alias futf='grep --color=auto -nP "[^\x00-\x7F]"'
+alias faws='grep --color=auto -nP "[^\S ]"'
+alias ftws='grep --color=auto -nP "[\s]+$"'
 
 #alias pkg-info="sudo pacman -Qi"
 #alias local-install="sudo pacman -U"
@@ -134,4 +135,3 @@ dircat() {
 
   return 0
 }
-
