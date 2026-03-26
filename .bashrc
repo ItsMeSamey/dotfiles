@@ -30,6 +30,7 @@ export LESS='-R --use-color -Dd+r$Du+b$'
 export MANROFFOPT="-P -c"
 export MANPAGER="less"
 export EDITOR=nvim
+export DOCKER_BUILDKIT=1
 
 # nvidia as decoder
 # export LIBVA_DRIVER_NAME=nvidia
