@@ -5,7 +5,7 @@ merge_path() {
   local shell_path
 
   shell_path="$(
-    bash --noprofile -ic 'printf %s "$PATH"' 2>/dev/null || true
+    bash -ic 'printf %s "$PATH"' 2>/dev/null || true
   )"
 
   printf '%s\n' "${PATH:-}:$shell_path" |
@@ -14,7 +14,7 @@ merge_path() {
 
 MERGED_PATH="$(merge_path)"
 
-plain_entries() {
+executable_entries() {
   local dir item
   local -a dirs
 
@@ -28,13 +28,21 @@ plain_entries() {
   done | awk '!seen[$0]++' | sort -u
 }
 
-rofi_entries() {
-  local cmd
+shell_entries() {
+  bash -ic '
+    alias -p | sed -n "s/^alias \([^=[:space:]]\+\)=.*/\1/p"
+    declare -F | awk "{print \$3}"
+  ' 2>/dev/null |
+    awk 'NF && !seen[$0]++' |
+    sort -u |
+    sed 's/^/!/'
+}
 
-  while IFS= read -r cmd; do
-    [[ -n "$cmd" ]] || continue
-    printf '%s\0meta\x1f!%s\n' "$cmd" "$cmd"
-  done < <(plain_entries)
+all_entries() {
+  {
+    executable_entries
+    shell_entries
+  } | awk '!seen[$0]++'
 }
 
 launcher() {
@@ -57,15 +65,9 @@ launcher() {
   exit 1
 }
 
-if command -v rofi >/dev/null 2>&1; then
-  choice="$(
-    rofi_entries | launcher "$@"
-  )"
-else
-  choice="$(
-    plain_entries | launcher -p 'run' "$@"
-  )"
-fi
+choice="$(
+  all_entries | launcher -p 'run' "$@"
+)"
 
 [[ -n "${choice:-}" ]] || exit 0
 
