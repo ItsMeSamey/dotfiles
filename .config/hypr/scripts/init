@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# sleep 0 && hyprpm reload -n
+# (echo toor|sudo -S mount --bind /home/a/Downloads/waybind /home/a/.local/share/waydroid/data/media/0/Download/waybind/)
+
+# Wob bar
+(
+  rm /tmp/wobpipe
+  mkfifo /tmp/wobpipe
+  tail -n 1 -f /tmp/wobpipe | wob
+)&
+
+# This fixes something
+(sleep 2 && xhost + local:)&
+
+# baloo file indexing for search in dolphin
+daemonize balooctl6 enable
+
+# Set env vars
+(
+  systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
+  dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland
+)&
+
+echo

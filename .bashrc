@@ -1,19 +1,10 @@
 # [[ $- != *i* ]] && return
-# TERM=xterm-256color
-TERM=xterm-ghostty
-PASSWD=toor
 
-if [[ "$(tty)" == "/dev/tty1" ]]; then
-  start-hyprland > /dev/null &\
-  /bin/bash -c "
-    echo $PASSWD|sudo -S clear
-    (sudo networkctl down wlp4s0 && sudo macchanger wlp4s0 -r && sudo networkctl up wlp4s0 && clear)&\
-    (sleep 1 && xhost + local: && clear)&\
-    (XDG_MENU_PREFIX=arch- kbuildsycoca6 && clear)&\
-    clear
-  " 2>&1>/dev/null
-fi
-    # sudo systemctl start warp-svc&\
+PASSWD=toor
+TERM=xterm-ghostty
+# TERM=xterm-256color
+
+shopt -s histappend
 
 PS1='\[\e[1;32m\]\w\[\e[0m\] \[\e[1;34m\]❯❯\[\e[0m\] ' #\033[s\r\033[$(($COLUMNS-8))C$(date +%-H:%0M:%0S)\033[u'
 HISTCONTROL=ignoreboth
@@ -21,35 +12,23 @@ HISTFILESIZE=10000000
 HISTSIZE=10000000
 
 export LD_LIBRARY_PATH=/local/courses/csse2310/lib
-export PATH="/opt/android-sdk/platform-tools/:/opt/flutter/bin:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
+export PATH="/opt/android-sdk/platform-tools/:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
 export XDG_CONFIG_HOME=$HOME/.config/
-export CHROME_EXECUTABLE=brave
 export GOPATH="$HOME/.go/"
 
 export LESS='-R --use-color -Dd+r$Du+b$'
 export MANROFFOPT="-P -c"
 export MANPAGER="less"
 export EDITOR=nvim
-export DOCKER_BUILDKIT=1
-
-# nvidia as decoder
-# export LIBVA_DRIVER_NAME=nvidia
 
 # fix for broken applications
 export QT_QPA_PLATFORM=xcb
 # debug symbols for glibc
 export DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 
-# use intel as vulkan backend
-export MESA_VK_DEVICE_SELECT=intel
-export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
-export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
 # wayland video driver
 export SDL_VIDEO_DRIVER=wayland
 
-shopt -s histappend
-
-alias mstart="mongod --dbpath /home/a/godot/db/"
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
@@ -57,9 +36,33 @@ alias egrep='egrep --color=auto'
 alias diff='diff --color=auto'
 alias ip='ip --color=auto'
 
+alias nd='echo $PASSWD| sudo -S networkctl down wlp4s0'
+alias nu='echo $PASSWD| sudo -S networkctl up wlp4s0'
+alias nohist="unset HISTFILE"
+alias nocache-shm="mkdir /dev/shm/cache/; echo $PASSWD|sudo -S mount --bind /dev/shm/cache/ /home/a/.cache/"
+alias nocache-tmp="mkdir /tmp/cache/; echo $PASSWD|sudo -S mount --bind /tmp/cache/ /home/a/.cache/"
+
+#alias pkg-info="sudo pacman -Qi"
+#alias local-install="sudo pacman -U"
+#alias clr-cache="sudo pacman -Scc"
+#alias unlock="sudo rm /var/lib/pacman/db.lck"
+#sshpass -p root ssh a@192.168.158.77 rpicam-vid --flicker-period=10000us --width=1920 --height=1080 -t0 -o- | tee vid.mp4 | mpv - --speed=2 --fps=25 --fs
+
+# --- Section 2 ---
+export CHROME_EXECUTABLE=brave
+alias chrome="brave"
+
+export DOCKER_BUILDKIT=1
+
+# nvidia as decoder
+# export LIBVA_DRIVER_NAME=nvidia
+
+# use intel as vulkan backend
+export MESA_VK_DEVICE_SELECT=intel
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
+export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
+
 alias p="python3"
-alias eb="nohup $@ 2>&1 > /dev/null"
-pyenv() { source "$HOME/.launch/env/$1/bin/activate"; }
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
 alias dl="aria2c -s32 -j64 -x16 -k8M -m0 -t20 --continue=true --check-certificate=false --allow-piece-length-change=true --optimize-concurrent-downloads=true --stream-piece-selector=geom --enable-http-pipelining"
 
@@ -71,10 +74,6 @@ alias ws="warp-cli status"
 alias zigalt="$HOME/.launch/bin/zig"
 
 alias brave='(echo $PASSWD| sudo -S networkctl down wlp4s0) && brave'
-alias nd='echo $PASSWD| sudo -S networkctl down wlp4s0'
-alias nu='echo $PASSWD| sudo -S networkctl up wlp4s0'
-alias nohist="unset HISTFILE"
-alias nocache="mkdir /dev/shm/cache/; echo $PASSWD|sudo -S mount --bind /dev/shm/cache/ /home/a/.cache/"
 
 alias mossup="systemctl start --user home-a-uq-csse2310-root.mount"
 alias mossdown="systemctl stop --user home-a-uq-csse2310-root.mount"
@@ -84,14 +83,8 @@ alias futf='grep --color=auto -nP "[^\x00-\x7F]"'
 alias faws='grep --color=auto -nP "[^\S ]"'
 alias ftws='grep --color=auto -nP "[\s]+$"'
 
-#alias pkg-info="sudo pacman -Qi"
-#alias local-install="sudo pacman -U"
-#alias clr-cache="sudo pacman -Scc"
-#alias unlock="sudo rm /var/lib/pacman/db.lck"
-#sshpass -p root ssh a@192.168.158.77 rpicam-vid --flicker-period=10000us --width=1920 --height=1080 -t0 -o- | tee vid.mp4 | mpv - --speed=2 --fps=25 --fs
 
-alias g='(cd ~/projects/python/gemini-client; uv run main.py)'
-alias gserver='(cd ~/projects/python/gemini-client; uv run gemini_proxy.py)'
+pyenv() { source "$HOME/.launch/env/$1/bin/activate"; }
 
 dircat() {
   local recursive=false
@@ -136,3 +129,84 @@ dircat() {
 
   return 0
 }
+
+# Daemonize
+daemonize() {
+  local cmd="$@"
+
+  # First fork: exit the parent so the shell returns to the prompt
+  (
+    # Second fork: the intermediate child exits, leaving the grandchild orphaned
+    (
+      # Detach from the terminal and ignore hangup signals
+      exec "$cmd" < /dev/null > /dev/null 2>&1 &
+    ) &
+    # The second child is now adopted by init (PID 1)
+    exit 0
+  ) &
+  # The original parent exits immediately
+  wait $! 2>/dev/null
+}
+
+cage_brave() {
+  set -euo pipefail
+
+  local nested_dir="$HOME/.nested"
+  local brave_profile="$nested_dir/brave-profile"
+  local brave_launcher="$nested_dir/open-brave"
+
+  mkdir -p "$brave_profile"
+
+  if [[ ! -x "$brave_launcher" ]]; then
+    # Create the launcher script that runs Brave with the isolated profile
+    printf '%s\n' \
+      '#!/usr/bin/env bash' \
+      'set -euo pipefail' \
+      "exec /usr/bin/brave --user-data-dir=\"$brave_profile\" \"\$@\"" \
+      > "$brave_launcher"
+    chmod +x "$brave_launcher"
+  fi
+
+  # Run Cage with the launcher, forwarding any function arguments to Brave
+  dbus-run-session env XDG_CURRENT_DESKTOP=cage XDG_SESSION_TYPE=wayland XDG_SESSION_DESKTOP=cage cage -- "$brave_launcher" "$@"
+}
+
+type_clipboard() {
+  set -euo pipefail
+
+  export YDOTOOL_SOCKET="${YDOTOOL_SOCKET:-/run/ydotoold/socket}"
+
+  if ! command -v wl-paste >/dev/null 2>&1; then
+    notify-send "Clipboard typer" "wl-paste is not installed"
+    return 1
+  fi
+
+  if ! command -v ydotool >/dev/null 2>&1; then
+    notify-send "Clipboard typer" "Install ydotool to use Mod+T"
+    return 1
+  fi
+
+  local clipboard
+  clipboard="$(wl-paste --no-newline 2>/dev/null || true)"
+
+  if [[ -z "$clipboard" ]]; then
+    notify-send "Clipboard typer" "Clipboard is empty"
+    return 1
+  fi
+
+  # Give the triggering keybind time to release before typing starts.
+  sleep 0.05
+
+  printf '%s' "$clipboard" | ydotool type -d 0 -f -
+}
+
+if [[ "$(tty)" == "/dev/tty1" ]]; then
+  daemonize start-hyprland
+  /bin/bash -c "
+    echo $PASSWD|sudo -S echo
+    (sudo networkctl down wlp4s0 && sudo macchanger wlp4s0 -r && sudo networkctl up wlp4s0)&\
+    (sleep 1 && xhost + local:)&\
+    (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
+  " 2>&1>/dev/null
+fi # sudo systemctl start warp-svc&\
+
