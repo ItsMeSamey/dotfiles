@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+merge_path() {
+  local shell_path
+
+  shell_path="$(
+    bash --noprofile -ic 'printf %s "$PATH"' 2>/dev/null || true
+  )"
+
+  printf '%s\n' "${PATH:-}:$shell_path" |
+    awk -v RS=':' 'NF && !seen[$0]++ { out = out (out ? ":" : "") $0 } END { print out }'
+}
+
+MERGED_PATH="$(merge_path)"
+
+plain_entries() {
+  local dir item
+  local -a dirs
+
+  IFS=':' read -r -a dirs <<<"$MERGED_PATH"
+  for dir in "${dirs[@]}"; do
+    [[ -d "$dir" ]] || continue
+    for item in "$dir"/*; do
+      [[ -f "$item" && -x "$item" ]] || continue
+      printf '%s\n' "${item##*/}"
+    done
+  done | awk '!seen[$0]++' | sort -u
+}
+
+rofi_entries() {
+  local cmd
+
+  while IFS= read -r cmd; do
+    [[ -n "$cmd" ]] || continue
+    printf '%s\0meta\x1f!%s\n' "$cmd" "$cmd"
+  done < <(plain_entries)
+}
+
+launcher() {
+  if command -v rofi >/dev/null 2>&1; then
+    rofi -dmenu -i -p 'run' "$@"
+    return
+  fi
+
+  if command -v dmenu >/dev/null 2>&1; then
+    dmenu "$@"
+    return
+  fi
+
+  if command -v bemenu >/dev/null 2>&1; then
+    bemenu "$@"
+    return
+  fi
+
+  printf 'no dmenu-compatible launcher found\n' >&2
+  exit 1
+}
+
+if command -v rofi >/dev/null 2>&1; then
+  choice="$(
+    rofi_entries | launcher "$@"
+  )"
+else
+  choice="$(
+    plain_entries | launcher -p 'run' "$@"
+  )"
+fi
+
+[[ -n "${choice:-}" ]] || exit 0
+
+if [[ "$choice" == '!'* ]]; then
+  command_string="${choice#!}"
+else
+  command_string="$choice"
+fi
+
+[[ -n "${command_string:-}" ]] || exit 0
+
+exec env PATH="$MERGED_PATH" bash -ic "$command_string"
