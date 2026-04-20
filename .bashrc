@@ -11,7 +11,6 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=10000000
 HISTSIZE=10000000
 
-export LD_LIBRARY_PATH=/local/courses/csse2310/lib
 export PATH="/opt/android-sdk/platform-tools/:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
 export XDG_CONFIG_HOME=$HOME/.config/
 export GOPATH="$HOME/.go/"
@@ -22,7 +21,8 @@ export MANPAGER="less"
 export EDITOR=nvim
 
 # fix for broken applications
-export QT_QPA_PLATFORM=xcb
+# export QT_QPA_PLATFORM=xcb
+export QT_QPA_PLATFORM=wayland
 # debug symbols for glibc
 export DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 
@@ -58,9 +58,9 @@ export DOCKER_BUILDKIT=1
 # export LIBVA_DRIVER_NAME=nvidia
 
 # use intel as vulkan backend
-export MESA_VK_DEVICE_SELECT=intel
-export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
-export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
+# export MESA_VK_DEVICE_SELECT=intel
+# export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json
+# export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.json
 
 alias p="python3"
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
@@ -75,14 +75,12 @@ alias zigalt="$HOME/.launch/bin/zig"
 
 alias brave='(echo $PASSWD| sudo -S networkctl down wlp4s0) && brave'
 
-alias mossup="systemctl start --user home-a-uq-csse2310-root.mount"
-alias mossdown="systemctl stop --user home-a-uq-csse2310-root.mount"
 alias waybind="sudo mount --bind ~/Downloads/waybind ~/.local/share/waydroid/data/media/0/Download/waybind"
 
 alias futf='grep --color=auto -nP "[^\x00-\x7F]"'
 alias faws='grep --color=auto -nP "[^\S ]"'
 alias ftws='grep --color=auto -nP "[\s]+$"'
-
+alias opencode-gui='cd ~/.launch/OpenGUI; bun run start:electron'
 
 pyenv() { source "$HOME/.launch/env/$1/bin/activate"; }
 
