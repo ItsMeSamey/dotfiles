@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  printf 'usage: %s command [args...]\n' "${0##*/}" >&2
+  exit 2
+fi
+
+gpu_bdf="0000:01:00.0"
+audio_bdf="0000:01:00.1"
+
+wait_for_path() {
+  local path="$1"
+  local i
+
+  for i in {1..50}; do
+    [[ -e "$path" ]] && return 0
+    sleep 0.1
+  done
+
+  printf 'nvidia-run: timed out waiting for %s\n' "$path" >&2
+  return 1
+}
+
+nvidia_holder_count() {
+  { find /proc/[0-9]*/fd \
+    \( -lname '/dev/nvidia*' -o -lname '/dev/dri/renderD129' -o -lname '/dev/dri/card0' \) \
+    2>/dev/null || true; } | wc -l
+}
+
+bring_up_nvidia() {
+  sudo modprobe nvidia nvidia_modeset nvidia_uvm nvidia_drm
+
+  if [[ ! -e "/sys/bus/pci/devices/$gpu_bdf" ]]; then
+    printf 'nvidia-run: rescanning PCI bus for NVIDIA\n' >&2
+    printf 1 | sudo tee /sys/bus/pci/rescan >/dev/null
+  fi
+
+  wait_for_path "/sys/bus/pci/devices/$gpu_bdf"
+  wait_for_path /dev/nvidia0
+  wait_for_path /dev/dri/by-path/pci-0000:01:00.0-render
+}
+
+remove_nvidia_if_idle() {
+  local holders
+
+  holders="$(nvidia_holder_count)"
+  if [[ "$holders" != "0" ]]; then
+    printf 'nvidia-run: leaving NVIDIA present; %s NVIDIA fd(s) still open\n' "$holders" >&2
+    return 0
+  fi
+
+  if [[ -e "/sys/bus/pci/devices/$audio_bdf/remove" ]]; then
+    printf 1 | sudo tee "/sys/bus/pci/devices/$audio_bdf/remove" >/dev/null || true
+  fi
+
+  if [[ -e "/sys/bus/pci/devices/$gpu_bdf/remove" ]]; then
+    printf 1 | sudo tee "/sys/bus/pci/devices/$gpu_bdf/remove" >/dev/null || true
+  fi
+}
+
+bring_up_nvidia
+
+status=0
+env \
+  DRI_PRIME=1 \
+  __NV_PRIME_RENDER_OFFLOAD=1 \
+  __VK_LAYER_NV_optimus=NVIDIA_only \
+  __GLX_VENDOR_LIBRARY_NAME=nvidia \
+  __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
+  VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json \
+  VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json \
+  "$@" || status=$?
+
+remove_nvidia_if_idle
+exit "$status"
