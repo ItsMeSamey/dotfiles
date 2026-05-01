@@ -11,7 +11,7 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=10000000
 HISTSIZE=10000000
 
-export PATH="/opt/android-sdk/platform-tools/:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
+export PATH="/opt/android-sdk/platform-tools/:$HOME/local/bin:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
 export XDG_CONFIG_HOME=$HOME/.config/
 export GOPATH="$HOME/.go/"
 
@@ -128,25 +128,7 @@ dircat() {
   return 0
 }
 
-# Daemonize
-daemonize() {
-  local cmd="$@"
-
-  # First fork: exit the parent so the shell returns to the prompt
-  (
-    # Second fork: the intermediate child exits, leaving the grandchild orphaned
-    (
-      # Detach from the terminal and ignore hangup signals
-      exec "$cmd" < /dev/null > /dev/null 2>&1 &
-    ) &
-    # The second child is now adopted by init (PID 1)
-    exit 0
-  ) &
-  # The original parent exits immediately
-  wait $! 2>/dev/null
-}
-
-cage_brave() {
+cage-brave() {
   set -euo pipefail
 
   local nested_dir="$HOME/.nested"
@@ -169,7 +151,7 @@ cage_brave() {
   dbus-run-session env XDG_CURRENT_DESKTOP=cage XDG_SESSION_TYPE=wayland XDG_SESSION_DESKTOP=cage cage -- "$brave_launcher" "$@"
 }
 
-type_clipboard() {
+type-clipboard() {
   set -euo pipefail
 
   export YDOTOOL_SOCKET="${YDOTOOL_SOCKET:-/run/ydotoold/socket}"
@@ -193,9 +175,48 @@ type_clipboard() {
   fi
 
   # Give the triggering keybind time to release before typing starts.
-  sleep 0.05
+  sleep 0.5
 
-  printf '%s' "$clipboard" | ydotool type -d 0 -f -
+  # echo "$clipboard" | wtype -
+  echo "$clipboard" | ydotool type -d 0 -f -
+}
+
+intel-run() {
+  if [[ $# -eq 0 ]]; then
+    printf 'usage: %s <command> [args...]\n' "${FUNCNAME[0]}" >&2
+    return 2
+  fi
+
+  env \
+    DRI_PRIME=0 \
+    __NV_PRIME_RENDER_OFFLOAD=0 \
+    __VK_LAYER_NV_optimus=non_NVIDIA_only \
+    __GLX_VENDOR_LIBRARY_NAME=mesa \
+    __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json \
+    MESA_VK_DEVICE_SELECT=8086:46a3! \
+    VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json \
+    VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.json \
+    LIBVA_DRIVER_NAME=iHD \
+    "$@"
+}
+
+nvidia-run() {
+  if [[ $# -eq 0 ]]; then
+    printf 'usage: %s <command> [args...]\n' "${FUNCNAME[0]}" >&2
+    return 2
+  fi
+
+  env \
+    -u MESA_VK_DEVICE_SELECT \
+    -u LIBVA_DRIVER_NAME \
+    DRI_PRIME=1 \
+    __NV_PRIME_RENDER_OFFLOAD=1 \
+    __VK_LAYER_NV_optimus=NVIDIA_only \
+    __GLX_VENDOR_LIBRARY_NAME=nvidia \
+    __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
+    VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json \
+    VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json \
+    "$@"
 }
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
@@ -207,4 +228,3 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
     (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
   " 2>&1>/dev/null
 fi # sudo systemctl start warp-svc&\
-

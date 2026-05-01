@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  printf 'usage: daemonize command [args...]\n' >&2
+  exit 2
+fi
+
+(
+  setsid "$@" </dev/null >/dev/null 2>&1 &
+) </dev/null >/dev/null 2>&1
