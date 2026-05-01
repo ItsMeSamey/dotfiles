@@ -181,44 +181,6 @@ type-clipboard() {
   echo "$clipboard" | ydotool type -d 0 -f -
 }
 
-intel-run() {
-  if [[ $# -eq 0 ]]; then
-    printf 'usage: %s <command> [args...]\n' "${FUNCNAME[0]}" >&2
-    return 2
-  fi
-
-  env \
-    DRI_PRIME=0 \
-    __NV_PRIME_RENDER_OFFLOAD=0 \
-    __VK_LAYER_NV_optimus=non_NVIDIA_only \
-    __GLX_VENDOR_LIBRARY_NAME=mesa \
-    __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json \
-    MESA_VK_DEVICE_SELECT=8086:46a3! \
-    VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json \
-    VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.json \
-    LIBVA_DRIVER_NAME=iHD \
-    "$@"
-}
-
-nvidia-run() {
-  if [[ $# -eq 0 ]]; then
-    printf 'usage: %s <command> [args...]\n' "${FUNCNAME[0]}" >&2
-    return 2
-  fi
-
-  env \
-    -u MESA_VK_DEVICE_SELECT \
-    -u LIBVA_DRIVER_NAME \
-    DRI_PRIME=1 \
-    __NV_PRIME_RENDER_OFFLOAD=1 \
-    __VK_LAYER_NV_optimus=NVIDIA_only \
-    __GLX_VENDOR_LIBRARY_NAME=nvidia \
-    __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
-    VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json \
-    VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json \
-    "$@"
-}
-
 if [[ "$(tty)" == "/dev/tty1" ]]; then
   daemonize start-hyprland
   /bin/bash -c "
