@@ -181,6 +181,33 @@ type-clipboard() {
   echo "$clipboard" | ydotool type -d 0 -f -
 }
 
+nvidia-stop() {
+  local gpu_bdf="0000:01:00.0"
+  local audio_bdf="0000:01:00.1"
+  local holders
+
+  holders="$({ find /proc/[0-9]*/fd \
+    \( -lname '/dev/nvidia[0-9]*' -o -lname '/dev/nvidia-uvm*' -o -lname '/dev/dri/renderD129' -o -lname '/dev/dri/card0' \) \
+    -printf '%h -> %l\n' 2>/dev/null || true; } | sed -E 's#/proc/([0-9]+)/fd -> (.*)#\1 \2#')"
+
+  sudo rm -f /run/nvidia-run-enable
+
+  if [[ -n "$holders" ]]; then
+    printf 'nvidia-stop: NVIDIA still has active render/CUDA users:\n%s\n' "$holders" >&2
+    return 1
+  fi
+
+  if [[ -e "/sys/bus/pci/devices/$audio_bdf/remove" ]]; then
+    printf 1 | sudo tee "/sys/bus/pci/devices/$audio_bdf/remove" >/dev/null
+  fi
+
+  if [[ -e "/sys/bus/pci/devices/$gpu_bdf/remove" ]]; then
+    printf 1 | sudo tee "/sys/bus/pci/devices/$gpu_bdf/remove" >/dev/null
+  else
+    printf 'nvidia-stop: NVIDIA GPU already removed\n' >&2
+  fi
+}
+
 if [[ "$(tty)" == "/dev/tty1" ]]; then
   daemonize start-hyprland
   /bin/bash -c "

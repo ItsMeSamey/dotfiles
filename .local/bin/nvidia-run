@@ -8,12 +8,21 @@ fi
 
 gpu_bdf="0000:01:00.0"
 audio_bdf="0000:01:00.1"
+udev_allow_file="/run/nvidia-run-enable"
+
+allow_nvidia_udev_add() {
+  sudo install -m 0644 /dev/null "$udev_allow_file"
+}
+
+restore_nvidia_udev_remove() {
+  sudo rm -f "$udev_allow_file"
+}
 
 wait_for_path() {
   local path="$1"
   local i
 
-  for i in {1..50}; do
+  for i in {1..150}; do
     [[ -e "$path" ]] && return 0
     sleep 0.1
   done
@@ -24,11 +33,12 @@ wait_for_path() {
 
 nvidia_holder_count() {
   { find /proc/[0-9]*/fd \
-    \( -lname '/dev/nvidia*' -o -lname '/dev/dri/renderD129' -o -lname '/dev/dri/card0' \) \
+    \( -lname '/dev/nvidia[0-9]*' -o -lname '/dev/nvidia-uvm*' -o -lname '/dev/dri/renderD129' -o -lname '/dev/dri/card0' \) \
     2>/dev/null || true; } | wc -l
 }
 
 bring_up_nvidia() {
+  allow_nvidia_udev_add
   sudo modprobe nvidia nvidia_modeset nvidia_uvm nvidia_drm
 
   if [[ ! -e "/sys/bus/pci/devices/$gpu_bdf" ]]; then
@@ -37,6 +47,7 @@ bring_up_nvidia() {
   fi
 
   wait_for_path "/sys/bus/pci/devices/$gpu_bdf"
+  sudo nvidia-modprobe -c0 -u
   wait_for_path /dev/nvidia0
   wait_for_path /dev/dri/by-path/pci-0000:01:00.0-render
 }
@@ -59,9 +70,17 @@ remove_nvidia_if_idle() {
   fi
 }
 
+cleanup() {
+  local exit_status=$?
+
+  remove_nvidia_if_idle
+  restore_nvidia_udev_remove
+  exit "$exit_status"
+}
+
+trap cleanup EXIT
 bring_up_nvidia
 
-status=0
 env \
   DRI_PRIME=1 \
   __NV_PRIME_RENDER_OFFLOAD=1 \
@@ -70,7 +89,4 @@ env \
   __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json \
   VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json \
   VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json \
-  "$@" || status=$?
-
-remove_nvidia_if_idle
-exit "$status"
+  "$@"
