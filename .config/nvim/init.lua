@@ -94,6 +94,7 @@ vim.g.zig_fmt_autosave = 0
 require 'user'
 require 'user.cmp'
 require 'user.mason'
+require 'user.java'
 
 require 'user.theme'
 require 'user.treesitter'
@@ -110,4 +111,3 @@ require 'user.telescope'
 -- require 'user.which-key'
 
 require 'user.remaps'
-

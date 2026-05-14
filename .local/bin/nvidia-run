@@ -37,7 +37,20 @@ nvidia_holder_count() {
     2>/dev/null || true; } | wc -l
 }
 
+is_pci_inspection_command() {
+  case "${1##*/}" in
+    lspci|setpci)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 bring_up_nvidia() {
+  local command_name="$1"
+
   allow_nvidia_udev_add
   sudo modprobe nvidia nvidia_modeset nvidia_uvm nvidia_drm
 
@@ -47,9 +60,16 @@ bring_up_nvidia() {
   fi
 
   wait_for_path "/sys/bus/pci/devices/$gpu_bdf"
+
+  if is_pci_inspection_command "$command_name"; then
+    return 0
+  fi
+
   sudo nvidia-modprobe -c0 -u
   wait_for_path /dev/nvidia0
-  wait_for_path /dev/dri/by-path/pci-0000:01:00.0-render
+  if [[ -e /sys/module/nvidia_drm ]]; then
+    wait_for_path /dev/dri/by-path/pci-0000:01:00.0-render
+  fi
 }
 
 remove_nvidia_if_idle() {
@@ -79,7 +99,7 @@ cleanup() {
 }
 
 trap cleanup EXIT
-bring_up_nvidia
+bring_up_nvidia "$1"
 
 env \
   DRI_PRIME=1 \

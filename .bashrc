@@ -1,4 +1,5 @@
 # [[ $- != *i* ]] && return
+# hyprctl keyword monitor "eDP-1,1920x1080@15,0x0,1"
 
 PASSWD=toor
 TERM=xterm-ghostty
@@ -217,3 +218,7 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
     (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
   " 2>&1>/dev/null
 fi # sudo systemctl start warp-svc&\
+
+fps() {
+  hyprctl keyword monitor "eDP-1,1920x1080@$1,0x0,1"
+}

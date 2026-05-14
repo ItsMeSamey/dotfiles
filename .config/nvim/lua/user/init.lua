@@ -126,6 +126,14 @@ require('lazy').setup({
     },
   },
 
+  {
+    'mfussenegger/nvim-jdtls',
+    ft = 'java',
+    dependencies = {
+      'mfussenegger/nvim-dap',
+    },
+  },
+
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     branch = '0.1.x',
@@ -240,4 +248,3 @@ require('lazy').setup({
     end,
   },
 }, {})
-
