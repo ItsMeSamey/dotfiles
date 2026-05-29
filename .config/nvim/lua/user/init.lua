@@ -229,22 +229,22 @@ require('lazy').setup({
   --   end,
   -- },
 
-  {
-    "supermaven-inc/supermaven-nvim",
-    config = function()
-      require("supermaven-nvim").setup({
-        keymaps = {
-          accept_suggestion = "<M-]>",
-          clear_suggestion = "<M-[>",
-          accept_word = "<M-j>",
-        },
-        log_level = "off", --can be "info"
-        disable_inline_completion = false,
-        disable_keymaps = false,
-        -- condition = function()
-        --   return false -- returns is-disabled
-        -- end
-      })
-    end,
-  },
+  -- {
+  --   "supermaven-inc/supermaven-nvim",
+  --   config = function()
+  --     require("supermaven-nvim").setup({
+  --       keymaps = {
+  --         accept_suggestion = "<M-]>",
+  --         clear_suggestion = "<M-[>",
+  --         accept_word = "<M-j>",
+  --       },
+  --       log_level = "off", --can be "info"
+  --       disable_inline_completion = false,
+  --       disable_keymaps = false,
+  --       -- condition = function()
+  --       --   return false -- returns is-disabled
+  --       -- end
+  --     })
+  --   end,
+  -- },
 }, {})

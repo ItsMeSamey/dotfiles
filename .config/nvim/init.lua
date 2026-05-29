@@ -91,6 +91,7 @@ vim.filetype.add({ pattern = { [".*config/hypr/.*conf"] = "hyprlang" } })
 -- vim.opt.spell = true
 -- vim.opt.spelllang = { 'en_us' }
 vim.g.zig_fmt_autosave = 0
+
 require 'user'
 require 'user.cmp'
 require 'user.mason'
