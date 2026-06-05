@@ -1,5 +1,4 @@
 # [[ $- != *i* ]] && return
-# hyprctl keyword monitor "eDP-1,1920x1080@15,0x0,1"
 
 PASSWD=toor
 TERM=xterm-ghostty
@@ -12,7 +11,8 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=10000000
 HISTSIZE=10000000
 
-export PATH="/opt/android-sdk/platform-tools/:$HOME/local/bin:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
+export PATH="/opt/android-sdk/platform-tools/:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
+export JAVA_HOME=/usr/lib/jvm/java-26-openjdk
 export XDG_CONFIG_HOME=$HOME/.config/
 export GOPATH="$HOME/.go/"
 
