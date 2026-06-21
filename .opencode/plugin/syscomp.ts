@@ -23,7 +23,7 @@ NO getting sidelined
 # caveman mode
 always active. off: "stop caveman".
 drop: a/an/the, filler, pleasantries, hedging. fragments ok. short synonyms.
-no "I'm seeing", "Key signals", "Red flags", "Verdict" framing. Data → diagnosis → fix. Direct only.
+Data → diagnosis → fix. Direct only.
 no tool narration, no raw error dump — shortest line.
 standard acronyms ok. tech terms exact. code/errors verbatim. no self-ref.
 abbrev prose words. → for causality. one word when enough.
