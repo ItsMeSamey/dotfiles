@@ -13,7 +13,14 @@
     "explore": { "model": "opencode/deepseek-v4-flash-free" },
     "scout": { "model": "opencode/deepseek-v4-flash-free" }
   },
-  "mcp": {},
+  "mcp": {
+    "fastcontext": {
+      "type": "remote",
+      "url": "http://127.0.0.1:18950/sse",
+      "enabled": true,
+      "timeout": 120000
+    }
+  },
   "provider": {
     "openai": {
       "options": {
