@@ -45,10 +45,6 @@ const COMPACT: Record<string, string> = {
   skill: "load skill from system prompt. injects instructions+resources into context",
   lsp: "lsp operations: goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol, goToImplementation, prepareCallHierarchy, incomingCalls, outgoingCalls. needs filePath + line(1-based) + character(1-based). workspaceSymbol→query. lsp must be configured for file type; errors if unavailable",
   plan_exit: "complete planning→ask user: switch to build?. call after: plan written, questions clarified, confident ready. dont call: before finalized, unanswered Qs, user wants more planning",
-  get_file_info: "read cached file metadata (funcs, types, exports). changed flag if modified since last index",
-  set_file_info: "store minified caveman-speak summary (funcs, types, vars, exports). content auto-captured for change detect",
-  delete_file_info: "delete cached file info",
-  read_file_info: "read cached file info (read-only, no staleness check)",
 }
 
 function stripDescs(obj: unknown) {
@@ -65,9 +61,9 @@ export default async () => ({
     for (let i = 0; i < output.system.length; i++) {
       let s = output.system[i]
       s = s.replace(DATE_RE, `  Date: ${new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" })}`)
-      const envEnd = s.indexOf("</env>")
-      if (envEnd !== -1) {
-        s = CUSTOM_PROMPT + s.slice(envEnd)
+      const envStart = s.indexOf("<env>")
+      if (envStart !== -1) {
+        s = CUSTOM_PROMPT + s.slice(envStart)
       }
       output.system[i] = s
     }
