@@ -61,7 +61,10 @@ const COMPACT: Record<string, string> = {
 function stripDescs(obj: unknown) {
   if (Array.isArray(obj)) for (const item of obj) stripDescs(item)
   else if (obj && typeof obj === "object") {
-    if ("description" in obj) delete (obj as Record<string, unknown>).description
+    const rec = obj as Record<string, unknown>
+    // Only strip string descriptions (documentation). Property definitions
+    // named "description" are objects and must be kept for schema validation.
+    if (typeof rec.description === "string") delete rec.description
     for (const v of Object.values(obj)) stripDescs(v)
   }
 }
