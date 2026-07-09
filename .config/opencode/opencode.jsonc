@@ -13,18 +13,6 @@
     "explore": { "model": "opencode/deepseek-v4-flash-free" },
     "scout": { "model": "opencode/deepseek-v4-flash-free" }
   },
-  "mcp": {
-    "fastcontext": {
-      "type": "local",
-      "command": ["uv", "run", "--directory", "/home/a/projects/ai/side-chick", "fastcontext", "mcp"],
-      "enabled": true,
-      "env": {
-        "MODEL": "BhupendraA/FastContext-1.0-4B-RL-Q4_K_M-GGUF:latest",
-        "BASE_URL": "http://127.0.0.1:11434/v1",
-        "API_KEY": "ollama"
-      }
-    }
-  },
   "provider": {
     "openai": {
       "options": {
