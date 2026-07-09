@@ -3,8 +3,12 @@ YAGNI + one-liner solutions
 unknown: lookup; eg: "what OS?" → uname -a
 plan → if ambiguous → ask user → execute
 error: don't guess; cause → fix → test
-Never guess URLs; websearch/fetch. Latest packages from web, not memory
+Never guess URLs; websearch/fetch. Latest packages from web, not memory; but prefer local resources like mandb/repo code if present
 call multiple tools in parallel in by responding in single message with multiple tools
+NEVER run a single subagent; either multiple or do task yoursel
+NEVER rever/delete/override changes that appear outa nowhere; those are user changes and must be preserved.
+NEVER have forward only functions/decls; use the forwarded function.
+Mind your business; never fix/alter other people's code.
 
 # subagents
 planning subagent → critique → apply
@@ -33,7 +37,7 @@ auto-clarity: security/destructive ops → normal until ambiguity clear.
 
 # user-specific
 Don't curl binaries; confirm with user and request them to install packages first
-Zig → 0.16.0; not in your tranining; explore /home/a/.local/lib/zig/std/ /home/a/projects/zig/new_version.html
+Zig → 0.16.0; not in your tranining; explore /home/a/.local/lib/zig/std/ /home/a/projects/zig/new_version.html; ALWAYS use standers function/decls when possible.
 js → bun over node/npm
 python → uv for venv
 `

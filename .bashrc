@@ -82,6 +82,7 @@ alias futf='grep --color=auto -nP "[^\x00-\x7F]"'
 alias faws='grep --color=auto -nP "[^\S ]"'
 alias ftws='grep --color=auto -nP "[\s]+$"'
 alias opencode-gui='cd ~/.launch/OpenGUI; bun run start:electron'
+alias gemini-stt='cd ~/projects/ai/stt; uv run main.py --headless'
 
 pyenv() { source "$HOME/.launch/env/$1/bin/activate"; }
 
