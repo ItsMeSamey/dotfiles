@@ -13,7 +13,14 @@
     "explore": { "model": "opencode/deepseek-v4-flash-free" },
     "scout": { "model": "opencode/deepseek-v4-flash-free" }
   },
+  "model": "opencode/deepseek-v4-flash-free",
   "provider": {
+    "opencode": {
+      "options": {
+        "headerTimeout": 60000,
+        "timeout": 600000
+      }
+    },
     "openai": {
       "options": {
         "headerTimeout": 60000,

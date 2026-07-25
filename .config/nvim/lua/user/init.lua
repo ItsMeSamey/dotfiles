@@ -247,4 +247,59 @@ require('lazy').setup({
   --     })
   --   end,
   -- },
+  { -- AI Agent (codegen)
+    "ThePrimeagen/99",
+    config = function()
+      local _99 = require("99")
+      local cwd = vim.uv.cwd()
+      local basename = vim.fs.basename(cwd)
+
+      _99.setup({
+        -- provider = _99.Providers.OpenCodeProvider,  -- default: uses opencode CLI
+        model = "opencode/deepseek-v4-flash-free",
+        tmp_dir = "./tmp",
+        logger = {
+          level = _99.DEBUG,
+          path = "/tmp/" .. basename .. ".99.debug",
+          print_on_error = true,
+        },
+        completion = {
+          files = {
+            exclude = { ".env*", ".git", "node_modules", "target", ".zig-cache", "zig-out" },
+          },
+        },
+        md_files = { "AGENT.md", "AGENTS.md" },
+      })
+
+      -- Replace visual selection with AI-generated code
+      vim.keymap.set("v", "<leader>9", function()
+        _99.visual()
+      end, { desc = "99: replace visual selection" })
+
+      -- Project-wide AI search
+      vim.keymap.set("n", "<leader>9s", function()
+        _99.search()
+      end, { desc = "99: search project" })
+
+      -- Cancel all in-flight requests
+      vim.keymap.set("n", "<leader>9x", function()
+        _99.stop_all_requests()
+      end, { desc = "99: stop requests" })
+
+      -- Open last interaction results
+      vim.keymap.set("n", "<leader>9o", function()
+        _99.open()
+      end, { desc = "99: open results" })
+
+      -- Telescope: switch model on the fly
+      vim.keymap.set("n", "<leader>9m", function()
+        require("99.extensions.telescope").select_model()
+      end, { desc = "99: select model" })
+
+      -- Telescope: switch provider on the fly
+      vim.keymap.set("n", "<leader>9p", function()
+        require("99.extensions.telescope").select_provider()
+      end, { desc = "99: select provider" })
+    end,
+  },
 }, {})
