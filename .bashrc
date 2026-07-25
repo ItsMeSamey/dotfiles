@@ -55,13 +55,35 @@ alias chrome="brave"
 
 export DOCKER_BUILDKIT=1
 
-# nvidia as decoder
-# export LIBVA_DRIVER_NAME=nvidia
+# Select the desktop GPU with `gpu-select intel` or `gpu-select nvidia`.
+# A new Hyprland session is required for the compositor itself to change GPU.
+_gpu_config="$HOME/.config/gpu-primary"
+if [ -r "$_gpu_config" ]; then
+  . "$_gpu_config"
+fi
 
-# use intel as vulkan backend
-# export MESA_VK_DEVICE_SELECT=intel
-# export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json
-# export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/intel_icd.json
+case "${GPU_PRIMARY:-nvidia}" in
+  nvidia)
+    export DRI_PRIME=1
+    export __NV_PRIME_RENDER_OFFLOAD=1
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    export __VK_LAYER_NV_optimus=NVIDIA_only
+    unset GBM_BACKEND LIBVA_DRIVER_NAME VK_ICD_FILENAMES VK_DRIVER_FILES
+    ;;
+  intel)
+    export DRI_PRIME=0
+    export __NV_PRIME_RENDER_OFFLOAD=0
+    export __GLX_VENDOR_LIBRARY_NAME=mesa
+    export __VK_LAYER_NV_optimus=non_NVIDIA_only
+    export LIBVA_DRIVER_NAME=iHD
+    export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json
+    unset GBM_BACKEND VK_DRIVER_FILES
+    ;;
+  *)
+    printf 'Invalid GPU_PRIMARY=%s (expected intel or nvidia)\n' "$GPU_PRIMARY" >&2
+    ;;
+esac
+unset _gpu_config
 
 alias p="python3"
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
@@ -156,7 +178,7 @@ cage-brave() {
 type-clipboard() {
   set -euo pipefail
 
-  export YDOTOOL_SOCKET="${YDOTOOL_SOCKET:-/run/ydotoold/socket}"
+  export YDOTOOL_SOCKET="${YDOTOOL_SOCKET:-$XDG_RUNTIME_DIR/.ydotool_socket}"
 
   if ! command -v wl-paste >/dev/null 2>&1; then
     notify-send "Clipboard typer" "wl-paste is not installed"
@@ -177,9 +199,9 @@ type-clipboard() {
   fi
 
   # Give the triggering keybind time to release before typing starts.
-  sleep 0.5
+  sleep 0.75
 
-  # echo "$clipboard" | wtype -
+  # echo "$clipboard" | ydotool type -d 0 -k 0 -f -
   echo "$clipboard" | ydotool type -d 0 -f -
 }
 
@@ -223,3 +245,4 @@ fi # sudo systemctl start warp-svc&\
 fps() {
   hyprctl keyword monitor "eDP-1,1920x1080@$1,0x0,1"
 }
+export PATH=$PATH:~/.local/bin
