@@ -14,6 +14,11 @@
 daemonize "$HOME/.config/hypr/scripts/brightness" start
 daemonize "$HOME/.config/hypr/scripts/contrast" start
 
+# Restore last brightness/contrast from disk
+sleep 0.5  # let workers init their FIFOs
+"$HOME/.config/hypr/scripts/brightness" restore
+"$HOME/.config/hypr/scripts/contrast" restore
+
 # This fixes something
 (sleep 2 && xhost + local:)&
 

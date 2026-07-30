@@ -5,10 +5,12 @@
 set -u
 
 runtime_dir="/dev/shm"
+persist_dir="${HOME}/.local/state/hypr"
 fifo="$runtime_dir/hypr-brightness.fifo"
 lock="$runtime_dir/hypr-brightness.lock"
-cache="$runtime_dir/hypr-brightness.cache"
+cache="$persist_dir/hypr-brightness.cache"
 cache_lock="$runtime_dir/hypr-brightness.cache.lock"
+mkdir -p "$persist_dir"
 brightness_min=0
 brightness_max=100
 worker_idle_seconds=3
@@ -153,8 +155,19 @@ enqueue() {
   return 1
 }
 
+restore() {
+  [[ -r "$cache" ]] || return 0
+  local identity kind value
+  while read -r identity value; do
+    [[ "$value" =~ ^[0-9]+$ ]] || continue
+    kind="${identity%%:*}"
+    apply_cached_value "$kind" "$value"
+  done < "$cache"
+}
+
 case "${1:-}" in
   worker|start) worker ;;
+  restore) restore ;;
   +*|-*) enqueue "$1" ;;
-  *) printf 'usage: %s {start|+N|-N}\n' "$0" >&2; exit 2 ;;
+  *) printf 'usage: %s {start|restore|+N|-N}\n' "$0" >&2; exit 2 ;;
 esac

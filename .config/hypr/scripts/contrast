@@ -5,10 +5,12 @@
 set -u
 
 runtime_dir="/dev/shm"
+persist_dir="${HOME}/.local/state/hypr"
 fifo="$runtime_dir/hypr-contrast.fifo"
 lock="$runtime_dir/hypr-contrast.lock"
-cache="$runtime_dir/hypr-contrast.cache"
+cache="$persist_dir/hypr-contrast.cache"
 cache_lock="$runtime_dir/hypr-contrast.cache.lock"
+mkdir -p "$persist_dir"
 contrast_min=0
 contrast_max=100
 worker_idle_seconds=3
@@ -132,8 +134,19 @@ enqueue() {
   return 1
 }
 
+restore() {
+  [[ -r "$cache" ]] || return 0
+  local identity value
+  while read -r identity value; do
+    [[ "$value" =~ ^[0-9]+$ ]] || continue
+    is_ddc_monitor "${identity#ddc:}" || continue
+    ddcutil setvcp 12 "$value" >/dev/null 2>&1
+  done < "$cache"
+}
+
 case "${1:-}" in
   worker|start) worker ;;
+  restore) restore ;;
   +*|-*) enqueue "$1" ;;
-  *) printf 'usage: %s {start|+N|-N}\n' "$0" >&2; exit 2 ;;
+  *) printf 'usage: %s {start|restore|+N|-N}\n' "$0" >&2; exit 2 ;;
 esac
