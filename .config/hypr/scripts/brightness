@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# Serialized brightness changes for Hyprland.  Each keypress writes one byte to
+# a FIFO; one worker batches those bytes while a slow DDC transaction is active.
+
+set -u
+
+runtime_dir="/dev/shm"
+fifo="$runtime_dir/hypr-brightness.fifo"
+lock="$runtime_dir/hypr-brightness.lock"
+cache="$runtime_dir/hypr-brightness.cache"
+cache_lock="$runtime_dir/hypr-brightness.cache.lock"
+brightness_min=0
+brightness_max=100
+worker_idle_seconds=3
+
+active_monitor() {
+  hyprctl -j activeworkspace 2>/dev/null | jq -r '.monitor // empty'
+}
+
+backend() {
+  case "${1:-$(active_monitor)}" in
+    HDMI-*|DP-*) printf 'ddc\n' ;;
+    *)          printf 'backlight\n' ;;
+  esac
+}
+
+apply_cached_value() {
+  local kind="$1" value="$2"
+  case "$kind" in
+    ddc)
+      ddcutil setvcp 10 "$value" >/dev/null 2>&1
+      ;;
+    backlight)
+      brightnessctl set "${value}%" >/dev/null
+      ;;
+  esac
+}
+
+write_cache() {
+  local identity="$1" value="$2"
+  if [[ -r "$cache" ]]; then
+    awk -v id="$identity" -v value="$value" '
+      $1 == id {
+        if (!updated) print id, value
+        updated = 1
+        next
+      }
+      { print }
+      END {
+        if (!updated) print id, value
+      }
+    ' "$cache" >"$cache.$$"
+  else
+    printf '%s %s\n' "$identity" "$value" >"$cache.$$"
+  fi
+  mv -f "$cache.$$" "$cache"
+  # This is the same pipe used by the volume bindings.  It happens before the
+  # hardware operation, so wob remains responsive even when DDC blocks.
+  printf '%s\n' "$value" > /tmp/wobpipe
+}
+
+cached_brightness() {
+  local identity="$1" value
+  [[ -r "$cache" ]] || return 1
+  value="$(awk -v id="$identity" '$1 == id && $2 ~ /^[0-9]+$/ { print $2 }' "$cache")"
+  [[ "$value" =~ ^[0-9]+$ ]] || return 1
+  printf '%s\n' "$value"
+}
+
+worker() {
+  mkdir "$lock" 2>/dev/null || exit 0
+  trap 'rm -f "$fifo" "$cache.$$" "$lock/enqueue"; rmdir "$lock"' EXIT INT TERM
+  rm -f "$fifo"
+  mkfifo -m 600 "$fifo"
+  : >"$lock/enqueue"
+  # Keeping one read/write descriptor open prevents EOF races between writers.
+  exec 3<>"$fifo"
+
+  local op delta kind monitor identity value
+  # Stay around briefly after each burst.  read blocks in the kernel, so this
+  # consumes no CPU while waiting and exits after three idle seconds.
+  while IFS= read -r -t "$worker_idle_seconds" -n 1 op <&3; do
+    case "$op" in '+' ) delta=1 ;; '-' ) delta=-1 ;; * ) continue ;; esac
+    # Gather all repeats already queued (and the ones arriving immediately
+    # after the first repeat) into one hardware operation.
+    while IFS= read -r -t 0.03 -n 1 op <&3; do
+      case "$op" in '+' ) ((delta += 1)) ;; '-' ) ((delta -= 1)) ;; esac
+    done
+    (( delta == 0 )) && continue
+    monitor="$(active_monitor)"
+    kind="$(backend "$monitor")"
+    identity="$kind:$monitor"
+    value="$(cached_brightness "$identity" || true)"
+    [[ "$value" =~ ^[0-9]+$ ]] && apply_cached_value "$kind" "$value"
+  done
+
+  # Do not close the read end between an enqueue path check and its write.
+  # An enqueue arriving during shutdown waits here, notices the removed FIFO,
+  # and starts a fresh worker.
+  exec 4>"$lock/enqueue"
+  flock -x 4
+  exec 3>&-
+  rm -f "$fifo"
+  flock -u 4
+  exec 4>&-
+
+}
+
+enqueue() {
+  local request="${1:-}" op count message monitor kind identity value
+  op="${request:0:1}"
+  count="${request:1}"
+  [[ "$op" == '+' || "$op" == '-' ]] || exit 2
+  [[ -z "$count" || "$count" =~ ^[1-9][0-9]*$ ]] || exit 2
+  count="${count:-1}"
+  printf -v message '%*s' "$count" ''
+  message="${message// /$op}"
+
+  # Update the UI before touching the hardware queue.  This path performs no
+  # DDC/backlight query, so every keypress reaches wob immediately.
+  monitor="$(active_monitor)"
+  kind="$(backend "$monitor")"
+  identity="$kind:$monitor"
+  exec 5>>"$cache_lock"
+  flock -x 5
+  value="$(cached_brightness "$identity" || printf '50')"
+  [[ "$op" == '+' ]] && ((value += count)) || ((value -= count))
+  (( value < brightness_min )) && value=$brightness_min
+  (( value > brightness_max )) && value=$brightness_max
+  write_cache "$identity" "$value"
+  flock -u 5
+  exec 5>&-
+
+  local attempt
+  for attempt in 1 2 3; do
+    if [[ -p "$fifo" && -e "$lock/enqueue" ]]; then
+      exec 4>"$lock/enqueue"
+      flock -s 4
+      if [[ -p "$fifo" ]]; then
+        printf '%s' "$message" >"$fifo"
+        flock -u 4
+        exec 4>&-
+        return 0
+      fi
+      flock -u 4
+      exec 4>&-
+    fi
+
+    "$0" worker &
+    # This short bounded wait is only for FIFO creation, never for key events.
+    for _ in {1..50}; do [[ -p "$fifo" && -e "$lock/enqueue" ]] && break; sleep 0.01; done
+  done
+  return 1
+}
+
+case "${1:-}" in
+  worker|start) worker ;;
+  +*|-*) enqueue "$1" ;;
+  *) printf 'usage: %s {start|+N|-N}\n' "$0" >&2; exit 2 ;;
+esac

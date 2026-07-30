@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Run one program on the GPU selected by gpu-select.
+set -euo pipefail
+
+GPU_PRIMARY=nvidia
+if [ -r "$HOME/.config/gpu-primary" ]; then
+  . "$HOME/.config/gpu-primary"
+fi
+
+case "$GPU_PRIMARY" in
+  nvidia)
+    export DRI_PRIME=1
+    export __NV_PRIME_RENDER_OFFLOAD=1
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    export __VK_LAYER_NV_optimus=NVIDIA_only
+    unset LIBVA_DRIVER_NAME VK_ICD_FILENAMES VK_DRIVER_FILES GBM_BACKEND
+    ;;
+  intel)
+    export DRI_PRIME=0
+    export __NV_PRIME_RENDER_OFFLOAD=0
+    export __GLX_VENDOR_LIBRARY_NAME=mesa
+    export __VK_LAYER_NV_optimus=non_NVIDIA_only
+    export LIBVA_DRIVER_NAME=iHD
+    export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json
+    unset VK_DRIVER_FILES GBM_BACKEND
+    ;;
+  *)
+    printf 'Invalid GPU_PRIMARY=%s (expected intel or nvidia)\n' "$GPU_PRIMARY" >&2
+    exit 2
+    ;;
+esac
+
+exec "$@"

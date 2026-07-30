@@ -64,6 +64,9 @@ fi
 
 case "${GPU_PRIMARY:-nvidia}" in
   nvidia)
+    # The RTX 3050 (HDMI-A-1). Restrict Hyprland to it so it does
+    # not attempt the unstable NVIDIA -> Intel DMA-BUF blit path.
+    export AQ_DRM_DEVICES="$HOME/.config/hypr/drm-nvidia"
     export DRI_PRIME=1
     export __NV_PRIME_RENDER_OFFLOAD=1
     export __GLX_VENDOR_LIBRARY_NAME=nvidia
@@ -71,6 +74,8 @@ case "${GPU_PRIMARY:-nvidia}" in
     unset GBM_BACKEND LIBVA_DRIVER_NAME VK_ICD_FILENAMES VK_DRIVER_FILES
     ;;
   intel)
+    # The Alder Lake iGPU (eDP-1).
+    export AQ_DRM_DEVICES="$HOME/.config/hypr/drm-intel"
     export DRI_PRIME=0
     export __NV_PRIME_RENDER_OFFLOAD=0
     export __GLX_VENDOR_LIBRARY_NAME=mesa

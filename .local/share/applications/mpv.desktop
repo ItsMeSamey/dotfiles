@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=mpv Media Player
+Comment=Play movies and songs on the selected GPU
+Icon=mpv
+TryExec=/home/a/.local/bin/gpu-mpv
+Exec=/home/a/.local/bin/gpu-mpv --player-operation-mode=pseudo-gui -- %U
+Terminal=false
+Categories=AudioVideo;Audio;Video;Player;
+StartupWMClass=mpv

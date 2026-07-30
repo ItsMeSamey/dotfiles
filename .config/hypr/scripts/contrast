@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# Serialized DDC contrast control.  Keypresses update the persistent cache and
+# wob immediately; one short-lived worker applies the latest value.
+
+set -u
+
+runtime_dir="/dev/shm"
+fifo="$runtime_dir/hypr-contrast.fifo"
+lock="$runtime_dir/hypr-contrast.lock"
+cache="$runtime_dir/hypr-contrast.cache"
+cache_lock="$runtime_dir/hypr-contrast.cache.lock"
+contrast_min=0
+contrast_max=100
+worker_idle_seconds=3
+
+active_monitor() {
+  hyprctl -j activeworkspace 2>/dev/null | jq -r '.monitor // empty'
+}
+
+is_ddc_monitor() {
+  case "$1" in
+    HDMI-*|DP-*) return 0 ;;
+    *)           return 1 ;;
+  esac
+}
+
+write_cache() {
+  local identity="$1" value="$2"
+  if [[ -r "$cache" ]]; then
+    awk -v id="$identity" -v value="$value" '
+      $1 == id {
+        if (!updated) print id, value
+        updated = 1
+        next
+      }
+      { print }
+      END {
+        if (!updated) print id, value
+      }
+    ' "$cache" >"$cache.$$"
+  else
+    printf '%s %s\n' "$identity" "$value" >"$cache.$$"
+  fi
+  mv -f "$cache.$$" "$cache"
+  printf '%s\n' "$value" > /tmp/wobpipe
+}
+
+cached_contrast() {
+  local identity="$1" value
+  [[ -r "$cache" ]] || return 1
+  value="$(awk -v id="$identity" '$1 == id && $2 ~ /^[0-9]+$/ { print $2 }' "$cache")"
+  [[ "$value" =~ ^[0-9]+$ ]] || return 1
+  printf '%s\n' "$value"
+}
+
+worker() {
+  mkdir "$lock" 2>/dev/null || exit 0
+  trap 'rm -f "$fifo" "$cache.$$" "$lock/enqueue"; rmdir "$lock"' EXIT INT TERM
+  rm -f "$fifo"
+  mkfifo -m 600 "$fifo"
+  : >"$lock/enqueue"
+  exec 3<>"$fifo"
+
+  local op delta monitor identity value
+  while IFS= read -r -t "$worker_idle_seconds" -n 1 op <&3; do
+    case "$op" in '+' ) delta=1 ;; '-' ) delta=-1 ;; * ) continue ;; esac
+    while IFS= read -r -t 0.03 -n 1 op <&3; do
+      case "$op" in '+' ) ((delta += 1)) ;; '-' ) ((delta -= 1)) ;; esac
+    done
+    (( delta == 0 )) && continue
+
+    monitor="$(active_monitor)"
+    is_ddc_monitor "$monitor" || continue
+    identity="ddc:$monitor"
+    value="$(cached_contrast "$identity" || true)"
+    [[ "$value" =~ ^[0-9]+$ ]] &&
+      ddcutil setvcp 12 "$value" >/dev/null 2>&1
+  done
+
+  exec 4>"$lock/enqueue"
+  flock -x 4
+  exec 3>&-
+  rm -f "$fifo"
+  flock -u 4
+  exec 4>&-
+}
+
+enqueue() {
+  local request="${1:-}" op count message monitor identity value attempt
+  op="${request:0:1}"
+  count="${request:1}"
+  [[ "$op" == '+' || "$op" == '-' ]] || exit 2
+  [[ -z "$count" || "$count" =~ ^[1-9][0-9]*$ ]] || exit 2
+  count="${count:-1}"
+
+  monitor="$(active_monitor)"
+  is_ddc_monitor "$monitor" || exit 0
+  identity="ddc:$monitor"
+
+  exec 5>>"$cache_lock"
+  flock -x 5
+  value="$(cached_contrast "$identity" || printf '50')"
+  [[ "$op" == '+' ]] && ((value += count)) || ((value -= count))
+  (( value < contrast_min )) && value=$contrast_min
+  (( value > contrast_max )) && value=$contrast_max
+  write_cache "$identity" "$value"
+  flock -u 5
+  exec 5>&-
+
+  printf -v message '%*s' "$count" ''
+  message="${message// /$op}"
+  for attempt in 1 2 3; do
+    if [[ -p "$fifo" && -e "$lock/enqueue" ]]; then
+      exec 4>"$lock/enqueue"
+      flock -s 4
+      if [[ -p "$fifo" ]]; then
+        printf '%s' "$message" >"$fifo"
+        flock -u 4
+        exec 4>&-
+        return 0
+      fi
+      flock -u 4
+      exec 4>&-
+    fi
+
+    "$0" worker &
+    for _ in {1..50}; do
+      [[ -p "$fifo" && -e "$lock/enqueue" ]] && break
+      sleep 0.01
+    done
+  done
+  return 1
+}
+
+case "${1:-}" in
+  worker|start) worker ;;
+  +*|-*) enqueue "$1" ;;
+  *) printf 'usage: %s {start|+N|-N}\n' "$0" >&2; exit 2 ;;
+esac

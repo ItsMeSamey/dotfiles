@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+GPU_PRIMARY=nvidia
+[ -r "$HOME/.config/gpu-primary" ] && . "$HOME/.config/gpu-primary"
+case "$GPU_PRIMARY" in
+  nvidia) hwdec=nvdec ;;
+  intel) hwdec=vaapi ;;
+  *) printf 'Invalid GPU_PRIMARY=%s\n' "$GPU_PRIMARY" >&2; exit 2 ;;
+esac
+
+exec "$HOME/.local/bin/gpu-env" /usr/bin/mpv "--hwdec=$hwdec" --gpu-api=opengl "$@"

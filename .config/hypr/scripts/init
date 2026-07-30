@@ -10,6 +10,10 @@
   tail -n 1 -f /tmp/wobpipe | wob
 )&
 
+# One serialized worker receives all display-brightness keypresses.
+daemonize "$HOME/.config/hypr/scripts/brightness" start
+daemonize "$HOME/.config/hypr/scripts/contrast" start
+
 # This fixes something
 (sleep 2 && xhost + local:)&
 
