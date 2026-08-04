@@ -19,11 +19,8 @@ sleep 0.5  # let workers init their FIFOs
 "$HOME/.config/hypr/scripts/brightness" restore
 "$HOME/.config/hypr/scripts/contrast" restore
 
-# This fixes something
-(sleep 2 && xhost + local:)&
-
-# baloo file indexing for search in dolphin
-daemonize balooctl6 enable
+# This fixes something; maybe used to fix something
+# (sleep 2 && xhost + local:)&
 
 # Set env vars
 (
