@@ -56,9 +56,6 @@ write_cache() {
     printf '%s %s\n' "$identity" "$value" >"$cache.$$"
   fi
   mv -f "$cache.$$" "$cache"
-  # This is the same pipe used by the volume bindings.  It happens before the
-  # hardware operation, so wob remains responsive even when DDC blocks.
-  printf '%s\n' "$value" > /tmp/wobpipe
 }
 
 cached_brightness() {
@@ -132,6 +129,7 @@ enqueue() {
   write_cache "$identity" "$value"
   flock -u 5
   exec 5>&-
+  "$HOME/.config/hypr/scripts/wob-push" "$value"
 
   local attempt
   for attempt in 1 2 3; do

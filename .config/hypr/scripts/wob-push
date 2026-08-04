@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Never let a missing wob reader block a Hyprland keybinding indefinitely.
+
+set -u
+
+if (( $# )); then
+  value="$1"
+else
+  IFS= read -r value || exit 0
+fi
+
+timeout 0.2s sh -c 'printf "%s\n" "$1" > /tmp/wobpipe' sh "$value" \
+  >/dev/null 2>&1 || true

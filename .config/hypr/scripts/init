@@ -1,23 +1,23 @@
 #!/bin/sh
 
-# sleep 0 && hyprpm reload -n
-# (echo toor|sudo -S mount --bind /home/a/Downloads/waybind /home/a/.local/share/waydroid/data/media/0/Download/waybind/)
-
-# Wob bar
-(
-  rm /tmp/wobpipe
-  mkfifo /tmp/wobpipe
-  tail -n 1 -f /tmp/wobpipe | wob
-)&
-
 # One serialized worker receives all display-brightness keypresses.
 daemonize "$HOME/.config/hypr/scripts/brightness" start
 daemonize "$HOME/.config/hypr/scripts/contrast" start
 
-# Restore last brightness/contrast from disk
-sleep 0.5  # let workers init their FIFOs
-"$HOME/.config/hypr/scripts/brightness" restore
-"$HOME/.config/hypr/scripts/contrast" restore
+echo toor | sudo -S bash -c 'ip link set wlp4s0 down; macchanger wlp4s0 -r; ip link set wlp4s0 up' &
+# (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
+# (sleep 1 && xhost + local:)&\
+# sudo systemctl start warp-svc&\
+
+# sleep 0 && hyprpm reload -n
+# (echo toor|sudo -S mount --bind /home/a/Downloads/waybind /home/a/.local/share/waydroid/data/media/0/Download/waybind/)
+
+# Wob bar
+rm -f /tmp/wobpipe
+mkfifo -m 600 /tmp/wobpipe
+# Opening the FIFO read/write prevents EOF when individual writers disconnect.
+daemonize sh -c 'exec 3<>/tmp/wobpipe; exec wob <&3'
+daemonize hypridle
 
 # This fixes something; maybe used to fix something
 # (sleep 2 && xhost + local:)&
@@ -28,4 +28,7 @@ sleep 0.5  # let workers init their FIFOs
   dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland
 )&
 
-echo
+# Restore last brightness/contrast from disk
+sleep 0.5  # let workers init their FIFOs
+"$HOME/.config/hypr/scripts/brightness" restore
+"$HOME/.config/hypr/scripts/contrast" restore

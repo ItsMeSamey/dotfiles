@@ -238,14 +238,7 @@ nvidia-stop() {
 }
 
 if [[ "$(tty)" == "/dev/tty1" ]]; then
-  daemonize start-hyprland
-  /bin/bash -c "
-    echo $PASSWD|sudo -S echo
-    (sudo networkctl down wlp4s0 && sudo macchanger wlp4s0 -r && sudo networkctl up wlp4s0)&\
-    (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
-  " 2>&1>/dev/null
-    # (sleep 1 && xhost + local:)&\
-    # sudo systemctl start warp-svc&\
+  exec start-hyprland
 fi
 
 fps() {

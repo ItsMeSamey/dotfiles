@@ -15,7 +15,7 @@ selection-invert-fg-bg = false
 # Useful when some script calls exit on the shell
 wait-after-command = true
 
-mouse-scroll-multiplier = .5
+mouse-scroll-multiplier = 4
 
 # Alt + click to move the cursor to that position
 cursor-click-to-move = true
