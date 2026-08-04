@@ -242,12 +242,12 @@ if [[ "$(tty)" == "/dev/tty1" ]]; then
   /bin/bash -c "
     echo $PASSWD|sudo -S echo
     (sudo networkctl down wlp4s0 && sudo macchanger wlp4s0 -r && sudo networkctl up wlp4s0)&\
-    (sleep 1 && xhost + local:)&\
     (XDG_MENU_PREFIX=arch- kbuildsycoca6)&\
   " 2>&1>/dev/null
-fi # sudo systemctl start warp-svc&\
+    # (sleep 1 && xhost + local:)&\
+    # sudo systemctl start warp-svc&\
+fi
 
 fps() {
   hyprctl keyword monitor "eDP-1,1920x1080@$1,0x0,1"
 }
-export PATH=$PATH:~/.local/bin
