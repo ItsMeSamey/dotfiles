@@ -126,7 +126,7 @@ hl.config({
 
     misc = {
         force_default_wallpaper = 0,
-        vrr = 1,
+        vrr = 0,
         animate_mouse_windowdragging = true,
         enable_swallow = true,
     },
@@ -134,7 +134,7 @@ hl.config({
     binds = { scroll_event_delay = 200, workspace_back_and_forth = true },
     xwayland = { force_zero_scaling = true, create_abstract_socket = true },
     opengl = { nvidia_anti_flicker = false },
-    render = { direct_scanout = 2 },
+    render = { direct_scanout = 1 },
 
     cursor = {
         no_hardware_cursors = 0,
@@ -231,7 +231,7 @@ mbind("T", function()
     hl.timer(function() hl.exec_cmd(type_clipboard) end, { timeout = 750, type = "oneshot" })
 end)
 mraw("B", H .. "/.local/bin/gpu-brave")
-mraw("E", "pcmanfm")
+mraw("E", "pcmanfm-qt")
 mraw("N", "subl")
 local launcher_shell = [=[
 set -euo pipefail
@@ -296,8 +296,9 @@ repeat_cmd("XF86MonBrightnessUp", brightness .. "+")
 repeat_cmd("XF86MonBrightnessDown", brightness .. "-")
 repeat_cmd("XF86ChannelUp", contrast .. "+")
 repeat_cmd("XF86ChannelDown", contrast .. "-")
-repeat_cmd("code:192", contrast .. "+")
+-- keyd emits F13/F14 (evdev 183/184); Hyprland raw codes include XKB's +8 offset.
 repeat_cmd("code:191", contrast .. "-")
+repeat_cmd("code:192", contrast .. "+")
 
 msh("SHIFT + Z", [[
 upower -d /org/freedesktop/UPower/devices/battery_BAT0 |
@@ -320,7 +321,6 @@ volume("XF86AudioLowerVolume", "wpctl set-volume -l 2.0 @DEFAULT_SINK@ 2%-")
 volume("XF86AudioMute", "wpctl set-mute @DEFAULT_SINK@ toggle")
 
 -- Misc
-msh("CTRL + R", "XDG_MENU_PREFIX=arch- kbuildsycoca6")
 mraw("CTRL + E", "systemctl restart --user wireplumber")
 mraw("CTRL + SHIFT + O", "loginctl terminate-user " .. U)
 hl.bind("F6", raw("ydotool click --repeat 20 --next-delay 6 0xC0"))
