@@ -151,6 +151,67 @@ dircat() {
   done
 }
 
+dirpatch() {
+  (($#)) || set -- .
+
+  local root= paths=() p r rel
+
+  for p in "$@"; do
+    [[ -d "$p" ]] || { echo "Not a directory: $p" >&2; return 1; }
+
+    p=$(realpath "$p") || return
+    r=$(git -C "$p" rev-parse --show-toplevel) || return
+    r=$(realpath "$r")
+
+    [[ -z "$root" ]] && root=$r
+    [[ "$r" == "$root" ]] || {
+      echo "Directories must belong to the same repo" >&2
+      return 1
+    }
+
+    [[ "$p" == "$root" ]] && rel=. || rel=${p#"$root/"}
+    paths+=("$rel")
+  done
+
+  (
+    cd "$root" || exit
+    git ls-files -z -- "${paths[@]}" |
+    while IFS= read -r -d '' f; do
+      [[ -e "$f" || -L "$f" ]] || continue
+      PAGER=cat git diff --no-index --binary /dev/null "$f" || [[ $? == 1 ]]
+    done
+  )
+}
+
+dirtar() {
+  (($#)) || set -- .
+
+  local root= paths=() p r rel
+
+  for p in "$@"; do
+    p=$(realpath "$p") || return
+    r=$(realpath "$(git -C "$p" rev-parse --show-toplevel)") || return
+
+    [[ -z "$root" ]] && root=$r
+    [[ "$r" == "$root" ]] || {
+      echo "Paths must belong to the same repo" >&2
+      return 1
+    }
+
+    [[ "$p" == "$root" ]] && rel=. || rel=${p#"$root/"}
+    paths+=("$rel")
+  done
+
+  (
+    cd "$root" || exit
+    git ls-files -z -- "${paths[@]}" |
+    while IFS= read -r -d '' f; do
+      [[ -e "$f" || -L "$f" ]] && printf '%s\0' "$f"
+    done |
+    tar --null -T - -cf -
+  )
+}
+
 cage-brave() {
   set -euo pipefail
 
