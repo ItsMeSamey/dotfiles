@@ -77,7 +77,10 @@ case "$GPU_PRIMARY" in
     export __NV_PRIME_RENDER_OFFLOAD=1
     export __GLX_VENDOR_LIBRARY_NAME=nvidia
     export __VK_LAYER_NV_optimus=NVIDIA_only
-    unset GBM_BACKEND LIBVA_DRIVER_NAME VK_ICD_FILENAMES VK_DRIVER_FILES
+    export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json
+    export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+    export VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json
+    unset GBM_BACKEND LIBVA_DRIVER_NAME
     ;;
   intel)
     # Keep Intel primary, but expose NVIDIA as well because HDMI-A-1 is wired to it.
@@ -88,7 +91,7 @@ case "$GPU_PRIMARY" in
     export __VK_LAYER_NV_optimus=non_NVIDIA_only
     export LIBVA_DRIVER_NAME=iHD
     export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.json
-    unset GBM_BACKEND VK_DRIVER_FILES
+    unset __EGL_VENDOR_LIBRARY_FILENAMES GBM_BACKEND VK_DRIVER_FILES
     ;;
   *)
     printf 'Invalid GPU_PRIMARY=%s (expected intel or nvidia)\n' "$GPU_PRIMARY" >&2

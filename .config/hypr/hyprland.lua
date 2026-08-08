@@ -13,6 +13,7 @@ local locked = { locked = true }
 local repeat_locked = { locked = true, repeating = true }
 local mouse = { mouse = true }
 local scripts = H .. "/.config/hypr/scripts/"
+local gpu_primary = os.getenv("GPU_PRIMARY") or "nvidia"
 
 -- Environment
 for k, v in pairs({
@@ -30,6 +31,33 @@ for k, v in pairs({
     GDK_BACKEND = "wayland",
     GTK_THEME = "Breeze-Dark",
 }) do hl.env(k, v) end
+
+local gpu_env = gpu_primary == "intel" and {
+    GPU_PRIMARY = "intel",
+    AQ_DRM_DEVICES = H .. "/.config/hypr/drm-intel:" .. H .. "/.config/hypr/drm-nvidia",
+    DRI_PRIME = "0",
+    __NV_PRIME_RENDER_OFFLOAD = "0",
+    __GLX_VENDOR_LIBRARY_NAME = "mesa",
+    __VK_LAYER_NV_optimus = "non_NVIDIA_only",
+    LIBVA_DRIVER_NAME = "iHD",
+    VK_ICD_FILENAMES = "/usr/share/vulkan/icd.d/intel_icd.json",
+} or {
+    GPU_PRIMARY = "nvidia",
+    AQ_DRM_DEVICES = H .. "/.config/hypr/drm-nvidia",
+    DRI_PRIME = "1",
+    __NV_PRIME_RENDER_OFFLOAD = "1",
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia",
+    __VK_LAYER_NV_optimus = "NVIDIA_only",
+    __EGL_VENDOR_LIBRARY_FILENAMES = "/usr/share/glvnd/egl_vendor.d/10_nvidia.json",
+    VK_ICD_FILENAMES = "/usr/share/vulkan/icd.d/nvidia_icd.json",
+    VK_DRIVER_FILES = "/usr/share/vulkan/icd.d/nvidia_icd.json",
+}
+local gpu_env_assignments = {}
+for k, v in pairs(gpu_env) do
+    hl.env(k, v)
+    table.insert(gpu_env_assignments, shell_quote(k .. "=" .. v))
+end
+local gpu_env_args = table.concat(gpu_env_assignments, " ")
 
 -- Old WLR_DRM_NO_ATOMIC equivalent; remove this if you no longer need the workaround.
 hl.env("AQ_NO_ATOMIC", "1")
@@ -51,11 +79,15 @@ hl.on("hyprland.start", function()
     ]=])
 
     hl.exec_cmd([=[
+        systemctl --user unset-environment GPU_PRIMARY AQ_DRM_DEVICES DRI_PRIME \
+            __NV_PRIME_RENDER_OFFLOAD __GLX_VENDOR_LIBRARY_NAME __VK_LAYER_NV_optimus \
+            __EGL_VENDOR_LIBRARY_FILENAMES LIBVA_DRIVER_NAME VK_ICD_FILENAMES \
+            VK_DRIVER_FILES GBM_BACKEND
+    ]=] .. "systemctl --user set-environment " .. gpu_env_args .. [=[
         systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE \
             XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
         dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE \
-            XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland
-    ]=])
+            XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland ]=] .. gpu_env_args)
 
     hl.timer(function()
         hl.exec_cmd(scripts .. "brightness restore; " .. scripts .. "contrast restore")
@@ -64,11 +96,11 @@ end)
 
 -- Monitors
 local function apply_monitor_profile()
-    if (os.getenv("GPU_PRIMARY") or "nvidia") == "intel" then
-        hl.monitor({ output = "eDP-1", mode = "preferred", position = "0x0", scale = 1 })
-        hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "0x0", scale = 1, mirror = "eDP-1" })
+    if gpu_primary == "intel" then
+        hl.monitor({ output = "eDP-1", mode = "1920x1080@60.20", position = "0x0", scale = 1 })
+        hl.monitor({ output = "HDMI-A-1", mode = "3840x2160@60", position = "0x0", scale = 1, mirror = "eDP-1" })
     else
-        hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "0x0", scale = 2 })
+        hl.monitor({ output = "HDMI-A-1", mode = "3840x2160@60", position = "0x0", scale = 2 })
         hl.monitor({ output = "eDP-1", disabled = true })
     end
     hl.monitor({ output = "", disabled = true })

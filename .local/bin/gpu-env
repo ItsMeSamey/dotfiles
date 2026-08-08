@@ -6,6 +6,7 @@ GPU_PRIMARY=nvidia
 if [ -r "$HOME/.config/gpu-primary" ]; then
   . "$HOME/.config/gpu-primary"
 fi
+export GPU_PRIMARY
 
 case "$GPU_PRIMARY" in
   nvidia)
