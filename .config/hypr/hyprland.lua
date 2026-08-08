@@ -59,9 +59,6 @@ for k, v in pairs(gpu_env) do
 end
 local gpu_env_args = table.concat(gpu_env_assignments, " ")
 
--- Old WLR_DRM_NO_ATOMIC equivalent; remove this if you no longer need the workaround.
-hl.env("AQ_NO_ATOMIC", "1")
-
 hl.on("hyprland.start", function()
     hl.exec_cmd(scripts .. "brightness start")
     hl.exec_cmd(scripts .. "contrast start")
@@ -209,7 +206,7 @@ msh("Z", "cd ~/projects/ai/stt && uv run stop.py")
 mraw("L", "hyprlock")
 msh("SHIFT + M", "hyprlock --immediate --quiet & systemctl hibernate", locked)
 msh("CTRL + M", "sudo -n efibootmgr -n 0002 && systemctl hibernate", locked)
-mraw("ALT + E", "hyprshutdown", locked)
+mbind("ALT + E", hl.dsp.exit(), locked)
 
 mbind("P", apply_monitor_profile, locked)
 
