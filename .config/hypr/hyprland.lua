@@ -236,15 +236,34 @@ mraw("N", "subl")
 local launcher_shell = [=[
 set -euo pipefail
 
-entries() {
-    local dir
+merge_path() {
+    local shell_path
+    shell_path="$(bash -ic 'printf %s "$PATH"' 2>/dev/null || true)"
+    printf '%s\n' "${PATH:-}:$shell_path" |
+        awk -v RS=':' 'NF && !seen[$0]++ { out = out (out ? ":" : "") $0 } END { print out }'
+}
+
+MERGED_PATH="$(merge_path)"
+
+executable_entries() {
+    local dir item
     local -a dirs
-    IFS=: read -r -a dirs <<<"$PATH"
+    IFS=: read -r -a dirs <<<"$MERGED_PATH"
     for dir in "${dirs[@]}"; do
         [[ -d $dir ]] || continue
-        find -L "$dir" -mindepth 1 -maxdepth 1 -type f -executable -printf '%f\n' 2>/dev/null || true
-    done
-    { compgen -a; compgen -A function; } | sed 's/^/!/'
+        for item in "$dir"/*; do
+            [[ -f $item && -x $item ]] && printf '%s\n' "${item##*/}"
+        done
+    done | awk '!seen[$0]++' | sort -u
+}
+
+shell_entries() {
+    bash -ic 'alias -p | sed -n "s/^alias \([^=[:space:]]\+\)=.*/\1/p"; declare -F | awk "{print \$3}"' 2>/dev/null |
+        awk 'NF && !seen[$0]++' | sort -u | sed 's/^/!/'
+}
+
+all_entries() {
+    { executable_entries; shell_entries; } | awk '!seen[$0]++'
 }
 
 launcher() {
@@ -255,19 +274,19 @@ launcher() {
     fi
 }
 
-choice="$(entries | sort -u | launcher)"
+choice="$(all_entries | launcher)"
 [[ -n ${choice:-} ]] || exit 0
 
 if [[ $choice == '!'* ]]; then
-    eval "${choice#!}"
-elif [[ $choice != *[[:space:]]* ]] && type -P -- "$choice" >/dev/null 2>&1; then
-    exec "$choice"
+    command_string="${choice#!}"
 else
-    eval "$choice"
+    command_string="$choice"
 fi
+[[ -n ${command_string:-} ]] || exit 0
+exec env PATH="$MERGED_PATH" bash -ic "$command_string"
 ]=]
 
-msh("M", "exec bash -ic " .. shell_quote(launcher_shell))
+msh("M", "daemonize bash -c " .. shell_quote(launcher_shell))
 
 -- Screenshots
 local shot_prefix = [[NAME=$(date +$HOME/Pictures/Screenshots/%Y-%m-%d_%H:%M:%S.%2N.png); ]]
