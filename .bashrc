@@ -1,4 +1,9 @@
-# [[ $- != *i* ]] && return
+_start_hyprland=false
+if [[ "$(tty)" == "/dev/tty1" ]]; then
+  _start_hyprland=true
+elif [[ $- != *i* ]]; then
+  return
+fi
 
 PASSWD=toor
 TERM=xterm-ghostty
@@ -61,8 +66,9 @@ _gpu_config="$HOME/.config/gpu-primary"
 if [ -r "$_gpu_config" ]; then
   . "$_gpu_config"
 fi
+export GPU_PRIMARY="${GPU_PRIMARY:-nvidia}"
 
-case "${GPU_PRIMARY:-nvidia}" in
+case "$GPU_PRIMARY" in
   nvidia)
     # The RTX 3050 (HDMI-A-1). Restrict Hyprland to it so it does
     # not attempt the unstable NVIDIA -> Intel DMA-BUF blit path.
@@ -74,8 +80,8 @@ case "${GPU_PRIMARY:-nvidia}" in
     unset GBM_BACKEND LIBVA_DRIVER_NAME VK_ICD_FILENAMES VK_DRIVER_FILES
     ;;
   intel)
-    # The Alder Lake iGPU (eDP-1).
-    export AQ_DRM_DEVICES="$HOME/.config/hypr/drm-intel"
+    # Keep Intel primary, but expose NVIDIA as well because HDMI-A-1 is wired to it.
+    export AQ_DRM_DEVICES="$HOME/.config/hypr/drm-intel:$HOME/.config/hypr/drm-nvidia"
     export DRI_PRIME=0
     export __NV_PRIME_RENDER_OFFLOAD=0
     export __GLX_VENDOR_LIBRARY_NAME=mesa
@@ -89,6 +95,12 @@ case "${GPU_PRIMARY:-nvidia}" in
     ;;
 esac
 unset _gpu_config
+
+if [[ $_start_hyprland == true ]]; then
+  unset _start_hyprland
+  exec start-hyprland
+fi
+unset _start_hyprland
 
 alias p="python3"
 alias anon="sudo su -c 'networkctl down wlp4s0 && macchanger -r wlp4s0 && networkctl up wlp4s0'"
@@ -180,36 +192,6 @@ cage-brave() {
   dbus-run-session env XDG_CURRENT_DESKTOP=cage XDG_SESSION_TYPE=wayland XDG_SESSION_DESKTOP=cage cage -- "$brave_launcher" "$@"
 }
 
-type-clipboard() {
-  set -euo pipefail
-
-  export YDOTOOL_SOCKET="${YDOTOOL_SOCKET:-$XDG_RUNTIME_DIR/.ydotool_socket}"
-
-  if ! command -v wl-paste >/dev/null 2>&1; then
-    notify-send "Clipboard typer" "wl-paste is not installed"
-    return 1
-  fi
-
-  if ! command -v ydotool >/dev/null 2>&1; then
-    notify-send "Clipboard typer" "Install ydotool to use Mod+T"
-    return 1
-  fi
-
-  local clipboard
-  clipboard="$(wl-paste --no-newline 2>/dev/null || true)"
-
-  if [[ -z "$clipboard" ]]; then
-    notify-send "Clipboard typer" "Clipboard is empty"
-    return 1
-  fi
-
-  # Give the triggering keybind time to release before typing starts.
-  sleep 0.75
-
-  # echo "$clipboard" | ydotool type -d 0 -k 0 -f -
-  echo "$clipboard" | ydotool type -d 0 -f -
-}
-
 nvidia-stop() {
   local gpu_bdf="0000:01:00.0"
   local audio_bdf="0000:01:00.1"
@@ -236,10 +218,6 @@ nvidia-stop() {
     printf 'nvidia-stop: NVIDIA GPU already removed\n' >&2
   fi
 }
-
-if [[ "$(tty)" == "/dev/tty1" ]]; then
-  exec start-hyprland
-fi
 
 fps() {
   hyprctl keyword monitor "eDP-1,1920x1080@$1,0x0,1"
