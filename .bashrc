@@ -129,47 +129,26 @@ alias gemini-stt='cd ~/projects/ai/stt; uv run main.py --headless'
 pyenv() { source "$HOME/.launch/env/$1/bin/activate"; }
 
 dircat() {
-  local recursive=false
-  local TARGET_DIR=""
-
-  if [ "$1" = "-r" ]; then
-    recursive=true
-    shift # Consume the -r flag
+  if [[ "$1" == "-r" ]]; then
+    shift
+    depth=()
+  else
+    depth=(-maxdepth 1)
   fi
 
-  if [ "$#" -ne 1 ]; then
+  [[ $# -eq 1 && -d "$1" ]] || {
     echo "Usage: dircat [-r] <directory>"
-    echo "Concatenates all non-binary files within the specified directory with headers/footers."
-    echo "  -r : Recurse into subdirectories."
     return 1
-  fi
+  }
 
-  TARGET_DIR="$1"
+  find "$1" "${depth[@]}" -type f -print0 |
+  while IFS= read -r -d '' file; do
+    [[ "$(file -b --mime-encoding "$file")" == binary ]] && continue
 
-  if [ ! -d "$TARGET_DIR" ]; then
-    echo "Error: Directory '$TARGET_DIR' not found or is not a directory."
-    return 1
-  fi
-
-  local find_args=("$TARGET_DIR")
-  if [ "$recursive" = "false" ]; then
-    find_args+=("-maxdepth" "1")
-  fi
-  find_args+=("-type" "f" "-print0")
-
-  find "${find_args[@]}" | while IFS= read -r -d $'\0' file; do
-    # Use 'file' to efficiently check the encoding. Skip if it's 'binary'.
-    ENCODING="$(file -b --mime-encoding "$file")"
-    if [ "$ENCODING" != "binary" ]; then
-      echo ">>>> ${file}"
-      cat "${file}"
-      echo ""
-      echo "<<<< ${file}"
-      echo ""
-    fi
+    printf '>>>> %s\n' "$file"
+    cat "$file"
+    printf '\n<<<< %s\n\n' "$file"
   done
-
-  return 0
 }
 
 cage-brave() {
