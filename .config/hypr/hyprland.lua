@@ -1,12 +1,9 @@
 local H = os.getenv("HOME") or ""
-local U = os.getenv("USER") or ""
 local M = "SUPER"
 
-local function raw(cmd) return hl.dsp.exec_raw(cmd) end
-local function sh(cmd) return hl.dsp.exec_cmd(cmd) end
+local exec = hl.dsp.exec_cmd
 local function mbind(keys, action, flags) hl.bind(M .. " + " .. keys, action, flags) end
-local function mraw(keys, cmd, flags) mbind(keys, raw(cmd), flags) end
-local function msh(keys, cmd, flags) mbind(keys, sh(cmd), flags) end
+local function mexec(keys, cmd, flags) mbind(keys, exec(cmd), flags) end
 local function shell_quote(s) return "'" .. s:gsub("'", "'\"'\"'") .. "'" end
 
 local locked = { locked = true }
@@ -52,17 +49,15 @@ local gpu_env = gpu_primary == "intel" and {
     VK_ICD_FILENAMES = "/usr/share/vulkan/icd.d/nvidia_icd.json",
     VK_DRIVER_FILES = "/usr/share/vulkan/icd.d/nvidia_icd.json",
 }
-local gpu_env_assignments = {}
+local gpu_env_names = {}
 for k, v in pairs(gpu_env) do
     hl.env(k, v)
-    table.insert(gpu_env_assignments, shell_quote(k .. "=" .. v))
+    gpu_env_names[#gpu_env_names + 1] = k
 end
-local gpu_env_args = table.concat(gpu_env_assignments, " ")
+local gpu_env_args = table.concat(gpu_env_names, " ")
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd(scripts .. "brightness start")
-    hl.exec_cmd(scripts .. "contrast start")
-    hl.exec_cmd("hypridle")
+    hl.exec_cmd(scripts .. "brightness start & " .. scripts .. "contrast start & exec hypridle")
 
     hl.exec_cmd([=[
         rm -f /tmp/wobpipe
@@ -80,11 +75,8 @@ hl.on("hyprland.start", function()
             __NV_PRIME_RENDER_OFFLOAD __GLX_VENDOR_LIBRARY_NAME __VK_LAYER_NV_optimus \
             __EGL_VENDOR_LIBRARY_FILENAMES LIBVA_DRIVER_NAME VK_ICD_FILENAMES \
             VK_DRIVER_FILES GBM_BACKEND
-    ]=] .. "systemctl --user set-environment " .. gpu_env_args .. [=[
-        systemctl --user import-environment WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE \
-            XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
         dbus-update-activation-environment --systemd WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE \
-            XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland ]=] .. gpu_env_args)
+            XDG_CURRENT_DESKTOP XDG_SESSION_TYPE ]=] .. gpu_env_args)
 
     hl.timer(function()
         hl.exec_cmd(scripts .. "brightness restore; " .. scripts .. "contrast restore")
@@ -126,7 +118,6 @@ hl.config({
 
     misc = {
         force_default_wallpaper = 0,
-        vrr = 0,
         animate_mouse_windowdragging = true,
         enable_swallow = true,
     },
@@ -138,7 +129,6 @@ hl.config({
 
     cursor = {
         no_hardware_cursors = 0,
-        no_break_fs_vrr = 1,
         inactive_timeout = 5,
         hide_on_key_press = true,
         zoom_rigid = true,
@@ -172,7 +162,7 @@ hl.gesture({ fingers = 4, direction = "horizontal", action = "move" })
 hl.gesture({ fingers = 4, direction = "pinch", action = "special", workspace_name = "G4" })
 
 -- Lid / workspaces
-hl.bind("switch:on:Lid Switch", raw("systemctl suspend-then-hibernate"), locked)
+hl.bind("switch:on:Lid Switch", exec("systemctl suspend-then-hibernate"), locked)
 mbind("S", hl.dsp.workspace.toggle_special("S"))
 mbind("SHIFT + S", hl.dsp.window.move({ workspace = "special:S", follow = true }))
 
@@ -201,38 +191,32 @@ for key, dir in pairs({ left = "l", right = "r", up = "u", down = "d" }) do
 end
 
 -- Commands
-msh("X", "cd ~/projects/ai/stt && uv run start.py")
-msh("Z", "cd ~/projects/ai/stt && uv run stop.py")
-mraw("L", "hyprlock")
-msh("SHIFT + M", "hyprlock --immediate --quiet & systemctl hibernate", locked)
-msh("CTRL + M", "sudo -n efibootmgr -n 0002 && systemctl hibernate", locked)
+mexec("X", "cd ~/projects/ai/stt && uv run start.py")
+mexec("Z", "cd ~/projects/ai/stt && uv run stop.py")
+mexec("L", "hyprlock")
+mexec("SHIFT + M", "hyprlock --immediate --quiet & systemctl hibernate", locked)
+mexec("CTRL + M", "sudo -n efibootmgr -n 0002 && systemctl hibernate", locked)
 mbind("ALT + E", hl.dsp.exit(), locked)
 
 mbind("P", apply_monitor_profile, locked)
 
-mraw("Q", H .. "/.local/bin/gpu-env ghostty")
+mexec("Q", H .. "/.local/bin/gpu-env ghostty")
 local type_clipboard = [=[
 export YDOTOOL_SOCKET="${YDOTOOL_SOCKET:-$XDG_RUNTIME_DIR/.ydotool_socket}"
-if ! command -v wl-paste >/dev/null 2>&1; then
-    notify-send "Clipboard typer" "wl-paste is not installed"
-elif ! command -v ydotool >/dev/null 2>&1; then
-    notify-send "Clipboard typer" "Install ydotool to use Mod+T"
+command -v wl-paste >/dev/null || { notify-send "Clipboard typer" "wl-paste is not installed"; exit; }
+command -v ydotool >/dev/null || { notify-send "Clipboard typer" "Install ydotool to use Mod+T"; exit; }
+clipboard="$(wl-paste --no-newline 2>/dev/null || true)"
+if [ -n "$clipboard" ]; then
+    printf '%s\n' "$clipboard" | ydotool type -d 0 -f -
 else
-    clipboard="$(wl-paste --no-newline 2>/dev/null || true)"
-    if [ -z "$clipboard" ]; then
-        notify-send "Clipboard typer" "Clipboard is empty"
-    else
-        printf '%s\n' "$clipboard" | ydotool type -d 0 -f -
-    fi
+    notify-send "Clipboard typer" "Clipboard is empty"
 fi
 ]=]
 
-mbind("T", function()
-    hl.timer(function() hl.exec_cmd(type_clipboard) end, { timeout = 750, type = "oneshot" })
-end)
-mraw("B", H .. "/.local/bin/gpu-brave")
-mraw("E", "pcmanfm-qt")
-mraw("N", "subl")
+mexec("T", type_clipboard, { release = true })
+mexec("B", H .. "/.local/bin/gpu-brave")
+mexec("E", "pcmanfm-qt")
+mexec("N", "subl")
 local launcher_shell = [=[
 PATH="$HYPR_PATH:$PATH"
 
@@ -250,26 +234,25 @@ choice="$(compgen -c | LC_ALL=C sort -u | "${picker[@]}")" || exit 0
 [[ -n $choice ]] && eval "$choice"
 ]=]
 
-msh("M", "setsid env HYPR_PATH=" .. shell_quote(os.getenv("PATH") or "") ..
+mexec("M", "setsid env HYPR_PATH=" .. shell_quote(os.getenv("PATH") or "") ..
     " bash -ic " .. shell_quote(launcher_shell) .. " </dev/null")
 
 -- Screenshots
 local shot_prefix = [[NAME=$(date +$HOME/Pictures/Screenshots/%Y-%m-%d_%H:%M:%S.%2N.png); ]]
 local function shot(keys, capture)
-    hl.bind(keys, sh(shot_prefix .. capture .. [[; wl-copy < "$NAME"]]))
+    hl.bind(keys, exec(shot_prefix .. capture .. [[; wl-copy < "$NAME"]]))
 end
 
 shot("Print", [[slurp | grim -t png -g - "$NAME"]])
 shot(M .. " + Print", [[echo 0, 0 1920x1080 | grim -t png -g - "$NAME"]])
 shot("SHIFT + Print", [[
 hyprctl activewindow |
-awk '/at:/ {sum = $2_}/size:/ {print sum, $2}' |
-rev | sed -e 's/, /x/' | rev |
+awk '/at:/ {pos=$2} /size:/ {gsub(/,/, "x", $2); print pos, $2; exit}' |
 grim -l 9 -t png -g - "$NAME"
 ]])
 
 -- Brightness / contrast
-local function repeat_cmd(keys, cmd) hl.bind(keys, raw(cmd), repeat_locked) end
+local function repeat_cmd(keys, cmd) hl.bind(keys, exec(cmd), repeat_locked) end
 local brightness = scripts .. "brightness "
 local contrast = scripts .. "contrast "
 
@@ -284,7 +267,7 @@ repeat_cmd("XF86ChannelDown", contrast .. "-")
 repeat_cmd("code:191", contrast .. "-")
 repeat_cmd("code:192", contrast .. "+")
 
-msh("SHIFT + Z", [[
+mexec("SHIFT + Z", [[
 upower -d /org/freedesktop/UPower/devices/battery_BAT0 |
 awk '/percentage:/ {gsub("%","",$2); print $2; exit}' | wl-copy
 ]])
@@ -297,7 +280,7 @@ awk '{muted=($0~/MUTED/?" muted":""); gsub(/[^0-9]/,"",$2); printf "%d%s\n",$2/2
 ]] .. wob
 
 local function volume(keys, cmd)
-    hl.bind(keys, sh(cmd .. " && " .. volume_status), repeat_locked)
+    hl.bind(keys, exec(cmd .. " && " .. volume_status), repeat_locked)
 end
 
 volume("XF86AudioRaiseVolume", "wpctl set-volume -l 2.0 @DEFAULT_SINK@ 2%+")
@@ -305,6 +288,6 @@ volume("XF86AudioLowerVolume", "wpctl set-volume -l 2.0 @DEFAULT_SINK@ 2%-")
 volume("XF86AudioMute", "wpctl set-mute @DEFAULT_SINK@ toggle")
 
 -- Misc
-mraw("CTRL + E", "systemctl restart --user wireplumber")
-mraw("CTRL + SHIFT + O", "loginctl terminate-user " .. U)
-hl.bind("F6", raw("ydotool click --repeat 20 --next-delay 6 0xC0"))
+mexec("CTRL + E", "systemctl restart --user wireplumber")
+mexec("CTRL + SHIFT + O", "loginctl terminate-user $USER")
+hl.bind("F6", exec("ydotool click --repeat 20 --next-delay 6 0xC0"))
