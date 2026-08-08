@@ -234,59 +234,24 @@ mraw("B", H .. "/.local/bin/gpu-brave")
 mraw("E", "pcmanfm-qt")
 mraw("N", "subl")
 local launcher_shell = [=[
-set -euo pipefail
+PATH="$HYPR_PATH:$PATH"
 
-merge_path() {
-    local shell_path
-    shell_path="$(bash -ic 'printf %s "$PATH"' 2>/dev/null || true)"
-    printf '%s\n' "${PATH:-}:$shell_path" |
-        awk -v RS=':' 'NF && !seen[$0]++ { out = out (out ? ":" : "") $0 } END { print out }'
-}
-
-MERGED_PATH="$(merge_path)"
-
-executable_entries() {
-    local dir item
-    local -a dirs
-    IFS=: read -r -a dirs <<<"$MERGED_PATH"
-    for dir in "${dirs[@]}"; do
-        [[ -d $dir ]] || continue
-        for item in "$dir"/*; do
-            [[ -f $item && -x $item ]] && printf '%s\n' "${item##*/}"
-        done
-    done | awk '!seen[$0]++' | sort -u
-}
-
-shell_entries() {
-    bash -ic 'alias -p | sed -n "s/^alias \([^=[:space:]]\+\)=.*/\1/p"; declare -F | awk "{print \$3}"' 2>/dev/null |
-        awk 'NF && !seen[$0]++' | sort -u | sed 's/^/!/'
-}
-
-all_entries() {
-    { executable_entries; shell_entries; } | awk '!seen[$0]++'
-}
-
-launcher() {
-    if command -v rofi >/dev/null 2>&1; then rofi -dmenu -i -p run
-    elif command -v dmenu >/dev/null 2>&1; then dmenu -p run
-    elif command -v bemenu >/dev/null 2>&1; then bemenu -p run
-    else printf 'no dmenu-compatible launcher found\n' >&2; return 1
-    fi
-}
-
-choice="$(all_entries | launcher)"
-[[ -n ${choice:-} ]] || exit 0
-
-if [[ $choice == '!'* ]]; then
-    command_string="${choice#!}"
+if command -v rofi >/dev/null 2>&1; then
+    picker=(rofi -dmenu -i -p run)
+elif command -v dmenu >/dev/null 2>&1; then
+    picker=(dmenu -p run)
+elif command -v bemenu >/dev/null 2>&1; then
+    picker=(bemenu -p run)
 else
-    command_string="$choice"
+    exit 1
 fi
-[[ -n ${command_string:-} ]] || exit 0
-exec env PATH="$MERGED_PATH" bash -ic "$command_string"
+
+choice="$(compgen -c | LC_ALL=C sort -u | "${picker[@]}")" || exit 0
+[[ -n $choice ]] && eval "$choice"
 ]=]
 
-msh("M", "daemonize bash -c " .. shell_quote(launcher_shell))
+msh("M", "setsid env HYPR_PATH=" .. shell_quote(os.getenv("PATH") or "") ..
+    " bash -ic " .. shell_quote(launcher_shell) .. " </dev/null")
 
 -- Screenshots
 local shot_prefix = [[NAME=$(date +$HOME/Pictures/Screenshots/%Y-%m-%d_%H:%M:%S.%2N.png); ]]
