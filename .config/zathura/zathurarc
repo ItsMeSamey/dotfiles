@@ -1,6 +1,6 @@
 set recolor true
-set recolor-lightcolor "#161616"
-set recolor-darkcolor "#e6e6e6"
+set recolor-lightcolor "#000000"
+set recolor-darkcolor "#ffffff"
 set recolor-keephue true
 
 set filemonitor glib
