@@ -134,7 +134,7 @@ hl.config({
         zoom_rigid = true,
     },
 
-    ecosystem = { no_update_news = true, no_donation_nag = true, enforce_permissions = true },
+    ecosystem = { no_update_news = true, no_donation_nag = true }, -- , enforce_permissions = true
 })
 
 -- Gestures
