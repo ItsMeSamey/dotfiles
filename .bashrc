@@ -16,10 +16,12 @@ HISTCONTROL=ignoreboth
 HISTFILESIZE=10000000
 HISTSIZE=10000000
 
-export PATH="/opt/android-sdk/platform-tools/:$HOME/.local/bin:$HOME/.go/bin:$HOME/.bun/bin:$PATH"
+export ANDROID_HOME="$HOME/.android/sdk"
+export ANDROID_SDK_ROOT="$HOME/.android/sdk"
 export JAVA_HOME=/usr/lib/jvm/java-26-openjdk
 export XDG_CONFIG_HOME=$HOME/.config/
 export GOPATH="$HOME/.go/"
+export PATH="$HOME/.local/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$GOPATH/bin:$HOME/.bun/bin:$PATH"
 
 export LESS='-R --use-color -Dd+r$Du+b$'
 export MANROFFOPT="-P -c"

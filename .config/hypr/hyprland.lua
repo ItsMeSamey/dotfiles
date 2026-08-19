@@ -215,7 +215,8 @@ fi
 
 mexec("T", type_clipboard, { release = true })
 mexec("B", H .. "/.local/bin/gpu-brave")
-mexec("E", "pcmanfm-qt")
+mexec("E", "dolphin")
+mexec("V", "mpv")
 mexec("N", "subl")
 local launcher_shell = [=[
 PATH="$HYPR_PATH:$PATH"
